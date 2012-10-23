@@ -145,11 +145,13 @@ xp.addCell = function(col, row, editable) {
                      maxHeight: xp.getRowHeight(row,edit)}
                   );
     cell.bind('resizestop',data, xp.onCellResize);
+    cell.bind('resize',data, xp.onCellResizeProg);
   } else if (row != -1 && col == -1) {
     cell.resizable( {minWidth: xp.getColWidth(col,edit), 
                      maxWidth: xp.getColWidth(col,edit)}
                   );
     cell.bind('resizestop', data, xp.onCellResize);
+    cell.bind('resize', data, xp.onCellResizeProg);
   }
   cell.appendTo($('#' + xp.containerId));
   xp.resizeTable();
@@ -158,6 +160,18 @@ xp.addCell = function(col, row, editable) {
   }
 }
 
+// per-pixel resize
+xp.onCellResizeProg = function(event, ui) {
+  if (event.data.row == -1 && event.data.col != -1) {
+    xp.colWidths[event.data.col] = Math.round(ui.size.width);
+    xp.resizeTable();
+  } else if (event.data.row != -1 && event.data.col == -1) {
+    xp.rowHeights[event.data.row] = Math.round(ui.size.height);
+    xp.resizeTable();
+  }
+}
+
+// on stop: round width to multiple of defColRound, defRowRound
 xp.onCellResize = function(event, ui) {
   if (event.data.row == -1 && event.data.col != -1) {
     xp.colWidths[event.data.col] = xp.defColRound * Math.round(ui.size.width / xp.defColRound);
