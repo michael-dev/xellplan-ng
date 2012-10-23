@@ -1,6 +1,6 @@
 <?php
 
-global $pdo, $DB_PREFIX;
+global $pdo, $DB_PREFIX, $pwObj;
 include '../../lib/inc.all.php';
 
 if (isset($_SERVER['PHP_AUTH_USER'])) {
@@ -10,25 +10,42 @@ if (isset($_SERVER['PHP_AUTH_USER'])) {
   if (is_array($res) && count($res) == 1) {
     $passwordHash = $res[0]["password"];
     $password = $_SERVER['PHP_AUTH_PW'];
+    if (!$pwObj->hashVerify($password, $passwordHash)) {
+      unset($_SERVER['PHP_AUTH_USER']);
+    }
+  } else {
+    unset($_SERVER['PHP_AUTH_USER']);
+  }
+}
 
 if (!isset($_SERVER['PHP_AUTH_USER'])) {
-    header('WWW-Authenticate: Basic realm="My Realm"');
+    header('WWW-Authenticate: Basic realm="XellPlan-NG"');
     header('HTTP/1.0 401 Unauthorized');
-    echo 'Text, der gesendet wird, falls der Benutzer auf Abbrechen drückt';
+    echo 'Admin-Rechte für Nutzerverwaltung benötigt.';
     exit;
-} else {
+}
 
 $users = $pdo->query("SELECT email, password, admin FROM ${DB_PREFIX}users");
-$pads = $pdo->query("SELECT group_id, section_id, id, * FROM ${DB_PREFIX}pads WHERE section_id != ''");
+$groups = $pdo->query("SELECT id FROM ${DB_PREFIX}groups");
+$grpMembers = $pdo->query("SELECT email, group_id FROM ${DB_PREFIX}rel_user_group");
 
 $result = Array();
 
-foreach ($grps as $row) {
-  $result[$row["id"]] = Array();
+$result["groups"] = Array();
+foreach ($groups as $row) {
+  $result["groups"][$row["id"]] = $row;
+  $result["groups"][$row["id"]]["members"] = Array();
 }
 
-foreach ($pads as $row) {
-  $result[$row["group_id"]][$row["section_id"]][$row["id"]] = $row;
+$result["users"] = Array();
+foreach ($users as $row) {
+  $result["users"][$row["email"]] = $row;
+  $result["users"][$row["email"]]["groups"] = Array();
+}
+
+foreach ($grpMembers as $row) {
+  $result["groups"][$row["group_id"]]["members"][] = $row["email"];
+  $result["users"][$row["email"]]["groups"][] = $row["group_id"];
 }
 
 header("Content-Type: text/json; charset=UTF-8");

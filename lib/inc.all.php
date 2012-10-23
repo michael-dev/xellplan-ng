@@ -2,6 +2,7 @@
 
 define('XPNGBASE', dirname(dirname(__FILE__)));
 
-include XPNGBASE.'/config/config.php';
-include XPNGBASE.'/lib/inc.db.php';
+require_once XPNGBASE.'/config/config.php';
+require_once XPNGBASE.'/lib/inc.db.php';
+require_once XPNGBASE.'/lib/inc.password.php';
 
