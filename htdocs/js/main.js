@@ -13,6 +13,8 @@ xp.borderWidth = 1;
 xp.paddingWidth = 2;
 xp.data = { 0: { 0: {text: 'hallo', classes : [ 'bold' ] } } };
 xp.currentFocus = null;
+xp.users = {}
+xp.groups = {}
 
 /* 65 (A) - 90 (Z): 26 Zeichen */
 xp.colName = function(i) {
@@ -73,9 +75,17 @@ xp.getRowTop = function(row) {
 
 xp.getRowClass = function(row) {
   if (row == -1) {
-    return 'headline';
+    return 'xpCellHeader';
   } else {
-    return 'row' + row;
+    return 'xpCellRow' + row;
+  }
+}
+
+xp.getColClass = function(col) {
+  if (col == -1) {
+    return 'xpCellNumber';
+  } else {
+    return 'xpCellColumn' + col;
   }
 }
 
@@ -97,6 +107,7 @@ xp.getCellId = function(col, row, edit) {
 xp.addCell = function(col, row, editable) {
   var edit = (editable == 2);
   var rowClass = xp.getRowClass(row);
+  var colClass = xp.getColClass(col);
   var cellId = xp.getCellId(col, row, edit);
   var data = {'col':col, 'row':row};
   var text = xp.getCellData(row, col);
@@ -115,23 +126,11 @@ xp.addCell = function(col, row, editable) {
     cell.addClass('editable');
     cell.click(data, xp.onCellClick);
   }
-  if (col == -1) {
-   cell.addClass('xpCellNumber');
-  } else {
-   cell.addClass('xpCellColumn' + col);
-  }
-  if (row == -1) {
-   cell.addClass('xpCellHeader');
-  } else {
-   cell.addClass('xpCellRow' + row);
-  }
+  cell.addClass(rowClass);
+  cell.addClass(colClass);
   $.each(classes, function(index, propClass) {
     cell.addClass(propClass);
   });
-  cell.css('width', xp.getColWidth(col,edit));
-  cell.css('height', xp.getRowHeight(row,edit));
-  cell.css('left', xp.getColLeft(col));
-  cell.css('top', xp.getRowTop(row));
   if (edit) {
     cell.val(text);
     cell.keydown(data, xp.onCellConfirm);
@@ -153,6 +152,7 @@ xp.addCell = function(col, row, editable) {
     cell.bind('resizestop', data, xp.onCellResize);
   }
   cell.appendTo($('#' + xp.containerId));
+  xp.resizeTable();
   if (edit) {
     cell.focus();
   }
@@ -169,16 +169,22 @@ xp.onCellResize = function(event, ui) {
 }
 
 xp.resizeTable = function() {
-  for (var row = 0; row < xp.numRow; row++) {
-    $('div.xpCellRow' + row).css('height', xp.getRowHeight(row,false));
-    $('input.xpCellRow' + row).css('height', xp.getRowHeight(row,true));
-    $('.xpCellRow' + row).css('top', xp.getRowTop(row));
+  for (var row = -1; row < xp.numRow; row++) {
+    var rowClass = xp.getRowClass(row);
+    $('div.' + rowClass).css('height', xp.getRowHeight(row,false));
+    $('input.' + rowClass).css('height', xp.getRowHeight(row,true));
+    $('.' + rowClass).css('top', xp.getRowTop(row));
   }
-  for (var col = 0; col < xp.numCol; col++) {
-    $('div.xpCellColumn' + col).css('width', xp.getColWidth(col, false));
-    $('input.xpCellColumn' + col).css('width', xp.getColWidth(col, true));
-    $('.xpCellColumn' + col).css('left', xp.getColLeft(col));
+  for (var col = -1; col < xp.numCol; col++) {
+    var colClass = xp.getColClass(col);
+    $('div.' + colClass).css('width', xp.getColWidth(col, false));
+    $('input.' + colClass).css('width', xp.getColWidth(col, true));
+    $('.' + colClass).css('left', xp.getColLeft(col));
   }
+  var totalWidth = xp.getColLeft(xp.numCol);
+  var totalHeight = xp.getRowTop(xp.numRow);
+  $('#'+xp.containerId).css('width', totalWidth);
+  $('#'+xp.containerId).css('height', totalHeight);
 }
 
 xp.onClickProp = function(event) {
@@ -370,9 +376,243 @@ xp.getCellClasses = function(row, col) {
   return ['fontsize1'];
 }
 
+xp.onTabChange = function(event, ui) {
+  switch (ui.panel.id) {
+    case "planlist": xp.refreshPlanList(); break;
+    case "plan": break;
+    case "usermgnt": xp.refreshUserGroupList(); break;
+  }
+}
+
+xp.refreshPlanList = function() {
+
+}
+
+xp.refreshUserGroupList = function() {
+  // 3. request
+  $.post('ajax/users.php', {'action':'list'}, function (values, status, req) {
+    if (typeof(values) != 'object') {
+      t = window.open('','fehler');
+      t.document.write(values);
+      t.document.close();
+      return;
+    }
+    xp.refreshUserGroupListHandler(values);
+  });
+}
+
+xp.refreshUserGroupListHandler = function(values) {
+  $( "#userlist").empty();
+  $( ".grplist").empty();
+  // set items
+  xp.users = values.users;
+  xp.groups = values.groups;
+  $( '#userlist').append($('<option>', {value: '', text: 'neu'}));
+  for (k in values.users) {
+    $( '#userlist').append($('<option>', {value: k, text: k}));
+  }
+  for (k in values.groups) {
+    $( '.grplist').append($('<option>', {value: k, text: k}));
+  }
+  xp.onSelectUser();
+  $('#grp').val('');
+}
+
+xp.onSelectUser = function() {
+  var currentUser = $('#userlist').val();
+  $('#usrgrplist').empty();
+  if (currentUser == '') {
+    $('#user_email').val('');
+    $('#user_password').val('');
+    $('#user_admin').attr('checked', false);
+  } else {
+    $('#user_email').val(xp.users[currentUser].email);
+    $('#user_password').val(xp.users[currentUser].password);
+    $('#user_admin').attr('checked', xp.users[currentUser].admin == 1);
+    for (k in xp.users[currentUser].groups) {
+      var v = xp.users[currentUser].groups[k];
+      $('#usrgrplist').append($('<option>', {value: v, text: v}));
+    }
+  }
+}
+
+xp.onDeleteGroup = function(event) {
+  var data = { };
+
+  event.stopPropagation();
+
+  var currentGroup = $('#grplist').val();
+  if (currentGroup == '') {
+    return false;
+  }
+  data.group = currentGroup;
+  data.action = 'deleteGroup';
+  $.post('ajax/users.php', data, function (values, status, req) {
+    if (typeof(values) != 'object') {
+      t = window.open('','fehler');
+      t.document.write(values);
+      t.document.close();
+      return;
+    }
+    alert('Die Gruppe wurde erfolgreich entfernt.');
+    xp.refreshUserGroupListHandler(values);
+  });
+  return false;
+}
+
+xp.onDeleteUser = function(event) {
+  var data = { };
+
+  event.stopPropagation();
+
+  var currentUser = $('#userlist').val();
+  if (currentUser == '') {
+    return false;
+  }
+  data.uid = currentUser;
+  data.action = 'delete';
+  $.post('ajax/users.php', data, function (values, status, req) {
+    if (typeof(values) != 'object') {
+      t = window.open('','fehler');
+      t.document.write(values);
+      t.document.close();
+      return;
+    }
+    alert('Der Nutzer wurde erfolgreich entfernt.');
+    xp.refreshUserGroupListHandler(values);
+  });
+  return false;
+}
+
+xp.onSaveUser = function(event) {
+  var data = { };
+  var numChangedAttr = 0;
+
+  event.stopPropagation();
+
+  var currentUser = $('#userlist').val();
+  var emailOld = (currentUser == '' ? null : xp.users[currentUser].email);
+  var emailNew = $('#user_email').val();
+  var pwOld = (currentUser == '' ? null : xp.users[currentUser].password);
+  var pwNew = $('#user_password').val();
+  var adminOld = (currentUser == '' ? null : xp.users[currentUser].admin);
+  var adminNew = ($('#user_admin').attr('checked') ? 1 : 0);
+
+  data.uid = currentUser;
+  if (pwOld !== pwNew) {
+    numChangedAttr++;
+    data.password = pwNew;
+  }
+  if (emailOld !== emailNew) {
+    numChangedAttr++;
+    data.email = emailNew;
+  }
+  if (adminOld !== adminNew) {
+    numChangedAttr++;
+    data.admin = adminNew;
+  }
+  data.action = 'save';
+
+  if (numChangedAttr == 0) {
+    alert('Es wurden keine Details geändert.');
+    return false;
+  }
+
+  $.post('ajax/users.php', data, function (values, status, req) {
+    if (typeof(values) != 'object') {
+      t = window.open('','fehler');
+      t.document.write(values);
+      t.document.close();
+      return;
+    }
+    alert('Der Nutzer wurde erfolgreich gespeichert.');
+    xp.refreshUserGroupListHandler(values);
+  });
+  return false;
+}
+
+xp.onCreateGroup = function(event) {
+  var data = { };
+
+  event.stopPropagation();
+
+  var newGrp = $('#grp').val();
+  if (newGrp == '') {
+    return false;
+  }
+
+  data.group = newGrp;
+  data.action = 'insertGroup';
+
+  $.post('ajax/users.php', data, function (values, status, req) {
+    if (typeof(values) != 'object') {
+      t = window.open('','fehler');
+      t.document.write(values);
+      t.document.close();
+      return;
+    }
+    alert('Die Gruppe wurde erfolgreich gespeichert.');
+    $('#grp').val('');
+    xp.refreshUserGroupListHandler(values);
+  });
+  return false;
+}
+
+xp.onAssignToGroup = function(event) {
+
+  event.stopPropagation();
+
+  var group = $('#grplist2').val();
+  var currentUser = $('#userlist').val();
+  if (group == '' || currentUser == '') {
+    return false;
+  }
+  var data = { };
+  data.action = 'addUserToGroup';
+  data.group = group;
+  data.user = currentUser;
+  $.post('ajax/users.php', data, function (values, status, req) {
+    if (typeof(values) != 'object') {
+      t = window.open('','fehler');
+      t.document.write(values);
+      t.document.close();
+      return;
+    }
+    alert('Die Gruppe wurde erfolgreich zugeordnet.');
+    xp.refreshUserGroupListHandler(values);
+  });
+  return false;
+}
+
+xp.onUnassignFromGroup = function(event) {
+
+  event.stopPropagation();
+
+  var group = $('#usrgrplist').val();
+  var currentUser = $('#userlist').val();
+  if (group == '' || currentUser == '') {
+    return false;
+  }
+  var data = { };
+  data.action = 'removeUserFromGroup';
+  data.group = group;
+  data.user = currentUser;
+  $.post('ajax/users.php', data, function (values, status, req) {
+    if (typeof(values) != 'object') {
+      t = window.open('','fehler');
+      t.document.write(values);
+      t.document.close();
+      return;
+    }
+    alert('Dem Nutzer wurden erfolreich die Rechte an der Gruppe entzogen.');
+    xp.refreshUserGroupListHandler(values);
+  });
+  return false;
+}
+
 xp.init = function() {
   $('#toolbar').hide();
-  xp.initTable();
+  $('#tabs').tabs({show: xp.onTabChange});
   $( "#save" ).button({
             text: false,
             icons: {
@@ -383,6 +623,14 @@ xp.init = function() {
   $( "#underline" ).button().change('val', xp.onClickProp);
   $( "#variable" ).button().change('val', xp.onClickProp);
   $( "#fontsize" ).buttonset().change('radio', xp.onClickProp);
+  $( "#userlist" ).change(xp.onSelectUser);
+  $( "#user_save" ).click(xp.onSaveUser);
+  $( "#user_delete" ).click(xp.onDeleteUser);
+  $( "#grp_insert" ).click(xp.onCreateGroup);
+  $( "#grp_delete" ).click(xp.onDeleteGroup);
+  $( "#grp_assign" ).click(xp.onAssignToGroup);
+  $( "#grp_unassign" ).click(xp.onUnassignFromGroup);
+  xp.initTable();
 }
 
 $(xp.init);

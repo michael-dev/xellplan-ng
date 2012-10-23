@@ -11,28 +11,55 @@
   <noscript>
     <h1>JavaScript-Unterstützung wird benötigt!</h1>
   </noscript>
-  <div id="header">
-   <form action="#">
-    <label for="group">Gruppe:</label> <select id="group" name="group" size="1"></select>
-    <label for="plan">Plan:</label> <select id="plan" name="plan" size="1"></select>
-    <input type="button" value="Benutzerverwaltung" id="usermgmt">
-   </form>
-  </div>
-  <span id="toolbar" class="ui-widget-header ui-corner-all">
-    <button id="save">save</button>
- 
-    <input type="checkbox" id="italics" value='italics'/><label for="italics">K</label>
-    <input type="checkbox" id="bold" value='bold'/><label for="bold">F</label>
-    <input type="checkbox" id="underline" value='underline' /><label for="underline">U</label>
-    <input type="checkbox" id="variable" value='variable' /><label for="variable">V</label>
- 
-    <span id="fontsize">
-      <input type="radio" id="fontsize0" name="fontsize" value='smallFontsize'/><label for="fontsize0" title='kleine Schriftgröße'>-1</label>
-      <input type="radio" id="fontsize1" name="fontsize" value='normalFontsize' checked="checked" /><label for="fontsize1" title='normale Schriftgröße'>0</label>
-      <input type="radio" id="fontsize2" name="fontsize" value='bigFontsize'/><label for="fontsize2" title='große Schriftgröße'>+1</label>
-    </span>
-  </span>
-  <div id="content"></div>
+  <div id="tabs">
+    <ul>
+      <li><a href="#planlist">Auswahl</a></li>
+      <li><a href="#plan">Plan</a></li>
+      <li><a href="#usermgnt">Nutzerverwaltung</a></li>
+    </ul>
+    <div id="planlist" class="tab">
+    </div>
+    <div id="plan" class="tab">
+      <div id="header">
+       <form action="#">
+        <label for="group">Gruppe:</label> <select id="group" name="group" size="1"></select>
+        <label for="plan">Plan:</label> <select id="plan" name="plan" size="1"></select>
+       </form>
+      </div>
+      <span id="toolbar" class="ui-widget-header ui-corner-all">
+        <button id="save">save</button>
+     
+        <input type="checkbox" id="italics" value='italics'/><label for="italics">K</label>
+        <input type="checkbox" id="bold" value='bold'/><label for="bold">F</label>
+        <input type="checkbox" id="underline" value='underline' /><label for="underline">U</label>
+        <input type="checkbox" id="variable" value='variable' /><label for="variable">V</label>
+     
+        <span id="fontsize">
+          <input type="radio" id="fontsize0" name="fontsize" value='smallFontsize'/><label for="fontsize0" title='kleine Schriftgröße'>-1</label>
+          <input type="radio" id="fontsize1" name="fontsize" value='normalFontsize' checked="checked" /><label for="fontsize1" title='normale Schriftgröße'>0</label>
+          <input type="radio" id="fontsize2" name="fontsize" value='bigFontsize'/><label for="fontsize2" title='große Schriftgröße'>+1</label>
+        </span>
+      </span>
+      <div id="content">
+      </div>
+    </div>
+    <div id="usermgnt" class="tab">
+      <form action="#">
+       <fieldset><legend>Benutzer</legend>
+        <div><label for="userlist">Nutzer:</label> <select id="userlist" class="userlist" name="userlist"></select></div>
+        <div><label for="user_email">eMail:</label> <input type="text" id="user_email" name="user_email"/></div>
+        <div><label for="user_password">Passwort:</label> <input type="password" id="user_password" name="user_password"/></div>
+        <div><label for="user_admin">Administrator:</label> <input type="checkbox" id="user_admin" name="user_admin"/></div>
+        <div><select id="usrgrplist" name="usergrplist"></select><button id="grp_unassign">Gruppenadministration entfernen.</button></div>
+        <div><select id="grplist2" class="grplist" name="grplist2"></select><button id="grp_assign">Zum Gruppenadministrator machen.</button></div>
+        <div><button id="user_save">Speichern</button> <button id="user_delete">Löschen</button></div>
+       </fieldset>
+       <fieldset><legend>Gruppen</legend>
+        <div><select id="grplist" class="grplist" name="grplist"></select><button id="grp_delete">Löschen</button></div>
+	<div><input id="grp" type="text" name="grp"/><button id="grp_insert">Anlegen</button></div>
+       </fieldset>
+      </form>
+    </div>
   </div>
  </body>
 </html>
