@@ -1,0 +1,15 @@
+#content { position: absolute; top: 100px; }
+.xpCell { position: absolute !important; border: thin solid black; padding: 2px; overflow: visible; margin: 0px; }
+.xpCellHeader { background-color: lightgrey; text-align: center; }
+.xpCellNumber { background-color: lightgrey; text-align: right; }
+.xpCell.editable { cursor: text; }
+.xpCell.hasFocus { border: thin solid red; }
+input.xpCell { border: thin solid blue; }
+#toolbar { padding: 10px 4px; }
+.bold { font-weight:bold; }
+.italics { font-style:italic; }
+.underline { text-decoration:underline; }
+.variable { background-color: yellow; }
+.smallFontsize { font-size: x-small; }
+.normalFontsize { font-size: medium; }
+.bigFontsize { font-size: x-large; }
