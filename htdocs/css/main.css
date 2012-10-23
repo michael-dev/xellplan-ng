@@ -14,4 +14,4 @@ input.xpCell { border: thin solid blue; }
 .normalFontsize { font-size: medium; }
 .bigFontsize { font-size: x-large; }
 div.tab { position: relative; }
-#usermgnt label { display: inline-block; width: 150px; } 
+#usermgnt label, #usrgrplist, #grplist2 { display: inline-block; min-width: 150px; } 

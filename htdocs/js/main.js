@@ -415,7 +415,7 @@ xp.refreshUserGroupListHandler = function(values) {
     $( '.grplist').append($('<option>', {value: k, text: k}));
   }
   xp.onSelectUser();
-  $('#grp').val('');
+  xp.onSelectGroup();
 }
 
 xp.onSelectUser = function() {
@@ -610,6 +610,19 @@ xp.onUnassignFromGroup = function(event) {
   return false;
 }
 
+xp.onSelectGroup = function() {
+  $('#grp').val('');
+  $('#grpadm').empty();
+  var currentGroup = $('#grplist').val();
+  if (currentGroup == '') {
+    return false;
+  }
+  for (var k in xp.groups[currentGroup].members) {
+    var v = xp.groups[currentGroup].members[k];
+    $('#grpadm').append($('<li>', {text: v}));
+  }
+}
+
 xp.init = function() {
   $('#toolbar').hide();
   $('#tabs').tabs({show: xp.onTabChange});
@@ -630,6 +643,7 @@ xp.init = function() {
   $( "#grp_delete" ).click(xp.onDeleteGroup);
   $( "#grp_assign" ).click(xp.onAssignToGroup);
   $( "#grp_unassign" ).click(xp.onUnassignFromGroup);
+  $( "#grplist" ).change(xp.onSelectGroup);
   xp.initTable();
 }
 
