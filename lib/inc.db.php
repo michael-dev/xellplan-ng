@@ -17,12 +17,14 @@ if ($r === false) {
                                                section_id VARCHAR(128) NOT NULL,
                                                      name VARCHAR(128) NOT NULL,
                                                   comment TEXT DEFAULT '' NOT NULL,
-                                               eventStart DATETIME NOT NULL,
-                                                 eventEnd DATETIME NOT NULL,
-                                                editStart DATETIME NOT NULL,
+                                                 expireAt DATETIME DEFAULT NULL,
+                                               eventStart DATETIME DEFAULT NULL,
+                                                 eventEnd DATETIME DEFAULT NULL,
+                                                editStart DATETIME DEFAULT NULL,
                                                   editEnd DATETIME NOT NULL,
                                                   creator VARCHAR(128) NOT NULL,
                                              editPassword VARCHAR(128) DEFAULT NULL,
+                                            adminPassword VARCHAR(128) DEFAULT NULL,
                                                   PRIMARY KEY (id) );") or die(print_r($pdo->errorInfo(),true));
 }
 
@@ -55,3 +57,15 @@ if ($r === false) {
                                                  PRIMARY KEY (pad_id, row, col) );") or die(print_r($pdo->errorInfo(),true));
 }
 
+$r = $pdo->query("SELECT COUNT(*) FROM ${DB_PREFIX}pad_log");
+if ($r === false) {
+  $pdo->query("CREATE TABLE ${DB_PREFIX}pad_log (
+                                                  pad_id INT,
+                                                     row INT,
+                                                     col INT,
+                                               eventTime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                                    text VARCHAR(128)
+                                                );") or die(print_r($pdo->errorInfo(),true));
+}
+
+# vim: set expandtab tabstop=8 shiftwidth=8 :

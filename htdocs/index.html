@@ -18,12 +18,30 @@
       <li><a href="#usermgnt">Nutzerverwaltung</a></li>
     </ul>
     <div id="planlist" class="tab">
+      <fieldset><legend>Plan anzeigen</legend>
+      <form action="#">
+        <label for="section">Bereich:</label> <select id="section" name="section" size="1"></select>
+      </form>
+      <ul id="ulplanlist">
+      </ul>
+      </fieldset>
+      <fieldset><legend>Neuen Plan anlegen</legend>
+      <form action="#">
+        <div><label for="name">Name:</label> <input type="text" id="name" name="name"/></div>
+        <div><label for="grplist">Gruppe:</label> <select id="grplist3" class="grplist" name="grplist"></select></div>
+        <div><label for="section">Bereich:</label> <input type="text" id="section2" name="section"/></div>
+        <div><label for="tpllist">Vorlage:</label> <select id="tpllist" class="tpllist" name="tpllist"></select></div>
+        <div><button id="plan_create">Anlegen</button></div>
+      </form>
+      </fieldset>
     </div>
     <div id="plan" class="tab">
       <div id="header">
        <form action="#">
         <label for="group">Gruppe:</label> <select id="group" name="group" size="1"></select>
         <label for="plan">Plan:</label> <select id="plan" name="plan" size="1"></select>
+	<a href="#">Zur Vorlage machen</a>
+	<a href="#">Löschen</a>
        </form>
       </div>
       <span id="toolbar" class="ui-widget-header ui-corner-all">
@@ -49,7 +67,7 @@
         <div><label for="userlist">Nutzer:</label> <select id="userlist" class="userlist" name="userlist"></select></div>
         <div><label for="user_email">eMail:</label> <input type="text" id="user_email" name="user_email"/></div>
         <div><label for="user_password">Passwort:</label> <input type="password" id="user_password" name="user_password"/></div>
-        <div><label for="user_admin">Administrator:</label> <input type="checkbox" id="user_admin" name="user_admin"/></div>
+        <div><label for="user_admin">Administrator:</label> <input type="checkbox" id="user_admin" name="user_admin"/> (global)</div>
         <div><select id="usrgrplist" name="usergrplist"></select><button id="grp_unassign">Gruppenadministration entfernen.</button></div>
         <div><select id="grplist2" class="grplist" name="grplist2"></select><button id="grp_assign">Zum Gruppenadministrator machen.</button></div>
         <div><button id="user_save">Speichern</button> <button id="user_delete">Löschen</button></div>

@@ -143,12 +143,12 @@ xp.addCell = function(col, row, editable) {
     cell.resizable();
     cell.resizable( {minHeight: xp.getRowHeight(row,edit), 
                      maxHeight: xp.getRowHeight(row,edit)}
-		  );
+                  );
     cell.bind('resizestop',data, xp.onCellResize);
   } else if (row != -1 && col == -1) {
     cell.resizable( {minWidth: xp.getColWidth(col,edit), 
                      maxWidth: xp.getColWidth(col,edit)}
-		  );
+                  );
     cell.bind('resizestop', data, xp.onCellResize);
   }
   cell.appendTo($('#' + xp.containerId));
@@ -378,14 +378,16 @@ xp.getCellClasses = function(row, col) {
 
 xp.onTabChange = function(event, ui) {
   switch (ui.panel.id) {
-    case "planlist": xp.refreshPlanList(); break;
-    case "plan": break;
-    case "usermgnt": xp.refreshUserGroupList(); break;
+    case "planlist": 
+      xp.initSelection();
+     break;
+    case "plan":
+     xp.initTable();
+     break;
+    case "usermgnt":
+     xp.refreshUserGroupList();
+     break;
   }
-}
-
-xp.refreshPlanList = function() {
-
 }
 
 xp.refreshUserGroupList = function() {
@@ -623,6 +625,72 @@ xp.onSelectGroup = function() {
   }
 }
 
+xp.initSelection = function() {
+  $('#section2').val(''); 
+  $.post('ajax/list.php', {}, function (values, status, req) {
+    if (typeof(values) != 'object') {
+      t = window.open('','fehler');
+      t.document.write(values);
+      t.document.close();
+      return;
+    }
+    $('#section').empty();
+    $('#grplist3').empty();
+    $('#tpllist').empty();
+    $('<option/>', {value: '', text: 'leere Vorlage'}).appendTo($('#tpllist'));
+
+    for (var group in values) {
+      $( '#grplist3').append($('<option>', {value: group, text: group}));
+      if (values[group][''].length > 0) {
+        // group has templates
+        var grpObj = $('<optgroup/>', {label: group}).appendTo($('#tpllist'));
+        for (var pad in values[group]['']) {
+          $('<option/>', {value: pad, text: values[group][''][pad]['name']}).appendTo(grpObj);
+        }
+      }
+      if (values[group].length > 1) {
+        // group has non-template sections
+        var grpObj = $('<optgroup/>', {label: group}).appendTo($('#tpllist'));
+        for (var section in values[group]) {
+          if (section != '') {
+            $('<option/>', {value: section, text: section}).appendTo(grpObj);
+          }
+        }
+      }
+    }
+  });
+}
+
+xp.onCreatePlan = function() {
+  event.stopPropagation();
+  var data = {};
+  data.group = $('#grplist3').val();
+  data.section = $('#section2').val();
+  data.template = $('#tpllist').val();
+  data.name = $('#name').val();
+  data.action = 'createPlan';
+
+  if (data.section == '') {
+    if (!confirm('Eine leere Bereichsangabe bedeutet, eine Vorlage zu erstellen. Wollen Sie wirklich nur eine Vorlage erstellen?')) {
+      return;
+    }
+  }
+
+  $.post('ajax/planmanage.php', data, function (values, status, req) {
+    if (typeof(values) != 'object') {
+      t = window.open('','fehler');
+      t.document.write(values);
+      t.document.close();
+      return;
+    }
+    xp.switchToPlan(values);
+  });
+}
+
+xp.switchToPlan = function(data) {
+  alert('switch2Plan is not implemented');
+}
+
 xp.init = function() {
   $('#toolbar').hide();
   $('#tabs').tabs({show: xp.onTabChange});
@@ -644,8 +712,9 @@ xp.init = function() {
   $( "#grp_assign" ).click(xp.onAssignToGroup);
   $( "#grp_unassign" ).click(xp.onUnassignFromGroup);
   $( "#grplist" ).change(xp.onSelectGroup);
-  xp.initTable();
+  $( "#plan_create" ).click(xp.onCreatePlan);
 }
 
 $(xp.init);
 
+// FIXME Bereich-Sel, Plan_list
