@@ -639,6 +639,7 @@ xp.onSelectGroup = function() {
   }
 }
 
+xp.pads = {};
 xp.initSelection = function() {
   $('#section2').val(''); 
   $.post('ajax/list.php', {}, function (values, status, req) {
@@ -648,6 +649,7 @@ xp.initSelection = function() {
       t.document.close();
       return;
     }
+    xp.pads = values;
     $('#section').empty();
     $('#grplist3').empty();
     $('#tpllist').empty();
@@ -662,20 +664,21 @@ xp.initSelection = function() {
           $('<option/>', {value: pad, text: values[group][''][pad]['name']}).appendTo(grpObj);
         }
       }
-      if (values[group].length > 1) {
+      if (Object.keys(values[group]).length > 1) {
         // group has non-template sections
-        var grpObj = $('<optgroup/>', {label: group}).appendTo($('#tpllist'));
+        var grpObj = $('<optgroup/>', {label: group}).appendTo($('#section'));
         for (var section in values[group]) {
           if (section != '') {
-            $('<option/>', {value: section, text: section}).appendTo(grpObj);
+            $('<option/>', {value: JSON.stringify({'group':group, 'section':section}), text: section}).appendTo(grpObj);
           }
         }
       }
     }
+    xp.switchPlanListToSection(null);
   });
 }
 
-xp.onCreatePlan = function() {
+xp.onCreatePlan = function(event) {
   event.stopPropagation();
   var data = {};
   data.group = $('#grplist3').val();
@@ -686,7 +689,7 @@ xp.onCreatePlan = function() {
 
   if (data.section == '') {
     if (!confirm('Eine leere Bereichsangabe bedeutet, eine Vorlage zu erstellen. Wollen Sie wirklich nur eine Vorlage erstellen?')) {
-      return;
+      return false;
     }
   }
 
@@ -697,12 +700,47 @@ xp.onCreatePlan = function() {
       t.document.close();
       return;
     }
-    xp.switchToPlan(values);
+    xp.initSelection();
+    xp.data[data.group][data.section][values.id]=values.data;
+    xp.switchToPlan({'data': {'group': data.group, 'section': data.section, 'id': values.id}});
+  });
+  return false;
+}
+
+xp.currentPlanId = null;
+xp.switchToPlan = function(event) {
+  xp.currentPlanId = event.data;
+  var planId = event.data.id;
+  var group = event.data.group;
+  var section = event.data.section;
+  var plan = xp.pads[group][section][planId];
+
+  $.post('ajax/plan.php', {'id': planId, 'action':'listPlanData'}, function (values, status, req) {
+    if (typeof(values) != 'object') {
+      t = window.open('','fehler');
+      t.document.write(values);
+      t.document.close();
+      return;
+    }
+    xp.data = values;
+    $("#tabs").tabs("select", "#plan");
   });
 }
 
-xp.switchToPlan = function(data) {
-  alert('switch2Plan is not implemented');
+xp.switchPlanListToSection = function(event) {
+  if (event != null) {
+    event.stopPropagation();
+  }
+  var section = $('#section').val();
+  if (section == '') {
+    return false;
+  }
+  section = JSON.parse( section );
+  $('#ulplanlist').empty();
+  for (var k in xp.pads[section.group][section.section]) {
+    var plan = xp.pads[section.group][section.section][k];
+    $('<li/>', {text: plan["name"]}).appendTo($('#ulplanlist')).click({'group': section.group, 'section': section.section, 'id':plan.id}, xp.switchToPlan);
+  }
 }
 
 xp.init = function() {
@@ -727,6 +765,20 @@ xp.init = function() {
   $( "#grp_unassign" ).click(xp.onUnassignFromGroup);
   $( "#grplist" ).change(xp.onSelectGroup);
   $( "#plan_create" ).click(xp.onCreatePlan);
+  $( "#section" ).change(xp.switchPlanListToSection);
+}
+
+if (!Object.keys) {
+    Object.keys = function (obj) {
+        var keys = [],
+            k;
+        for (k in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, k)) {
+                keys.push(k);
+            }
+        }
+        return keys;
+    };
 }
 
 $(xp.init);

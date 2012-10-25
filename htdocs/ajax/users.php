@@ -2,27 +2,7 @@
 
 global $pdo, $DB_PREFIX, $pwObj;
 include '../../lib/inc.all.php';
-if (isset($_SERVER['PHP_AUTH_USER'])) {
-  $userStmt = $pdo->prepare("SELECT password FROM ${DB_PREFIX}users WHERE admin AND email = ?") or die(print_r($pdo->errorInfo(),true));
-  $userStmt->execute(Array($_SERVER['PHP_AUTH_USER'])) or die(print_r($userStmt->errorInfo(),true));
-  $res = $userStmt->fetchAll();
-  if (is_array($res) && count($res) == 1) {
-    $passwordHash = $res[0]["password"];
-    $password = $_SERVER['PHP_AUTH_PW'];
-    if (!$pwObj->hashVerify($password, $passwordHash)) {
-      unset($_SERVER['PHP_AUTH_USER']);
-    }
-  } else {
-    unset($_SERVER['PHP_AUTH_USER']);
-  }
-}
-
-if (!isset($_SERVER['PHP_AUTH_USER'])) {
-    header('WWW-Authenticate: Basic realm="XellPlan-NG"');
-    header('HTTP/1.0 401 Unauthorized');
-    echo 'Admin-Rechte für Nutzerverwaltung benötigt.';
-    exit;
-}
+requireAdminAuth();
 
 switch ($_REQUEST["action"]):
  case "save":
@@ -68,6 +48,11 @@ switch ($_REQUEST["action"]):
  case "removeUserFromGroup":
    $grpStmt = $pdo->prepare("DELETE FROM ${DB_PREFIX}rel_user_group WHERE group_id = ? AND email = ?") or die(print_r($pdo->errorInfo(),true));
    $grpStmt->execute(Array($_REQUEST["group"], $_REQUEST["user"])) or die(print_r($grpStmt->errorInfo(),true));
+ break;
+ case "list":
+ break;
+ default:
+   die("invalid action");
  break;
 endswitch;
 

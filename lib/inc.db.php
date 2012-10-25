@@ -68,4 +68,93 @@ if ($r === false) {
                                                 );") or die(print_r($pdo->errorInfo(),true));
 }
 
+function requireAdminAuth() {
+  global $pdo, $DB_PREFIX, $pwObj;
+  if (isset($_SERVER['PHP_AUTH_USER'])) {
+    $userStmt = $pdo->prepare("SELECT password FROM ${DB_PREFIX}users WHERE admin AND email = ?") or die(print_r($pdo->errorInfo(),true));
+    $userStmt->execute(Array($_SERVER['PHP_AUTH_USER'])) or die(print_r($userStmt->errorInfo(),true));
+    $res = $userStmt->fetchAll();
+    if (is_array($res) && count($res) == 1) {
+      $passwordHash = $res[0]["password"];
+      $password = $_SERVER['PHP_AUTH_PW'];
+      if (!$pwObj->hashVerify($password, $passwordHash)) {
+        unset($_SERVER['PHP_AUTH_USER']);
+      }
+    } else {
+      unset($_SERVER['PHP_AUTH_USER']);
+    }
+  }
+  
+  if (!isset($_SERVER['PHP_AUTH_USER'])) {
+      header('WWW-Authenticate: Basic realm="XellPlan-NG"');
+      header('HTTP/1.0 401 Unauthorized');
+      echo 'Admin-Rechte für Nutzerverwaltung benötigt.';
+      exit;
+  }
+}
+
+function requireGroupAdmin($groupId) {
+  global $pdo, $DB_PREFIX, $pwObj;
+  if (isset($_SERVER['PHP_AUTH_USER'])) {
+    $userStmt = $pdo->prepare("SELECT password FROM ${DB_PREFIX}users INNER JOIN ${DB_PREFIX}rel_user_group ON ${DB_PREFIX}rel_user_group.email = ${DB_PREFIX}users.email WHERE group_id = ? AND ${DB_PREFIX}users.email = ?") or die(print_r($pdo->errorInfo(),true));
+    $userStmt->execute(Array($groupId, $_SERVER['PHP_AUTH_USER'])) or die(print_r($userStmt->errorInfo(),true));
+    $res = $userStmt->fetchAll();
+    if (is_array($res) && count($res) == 1) {
+      $passwordHash = $res[0]["password"];
+      $password = $_SERVER['PHP_AUTH_PW'];
+      if (!$pwObj->hashVerify($password, $passwordHash)) {
+        unset($_SERVER['PHP_AUTH_USER']);
+      }
+    } else {
+      unset($_SERVER['PHP_AUTH_USER']);
+    }
+  }
+  
+  if (!isset($_SERVER['PHP_AUTH_USER'])) {
+      header('WWW-Authenticate: Basic realm="XellPlan-NG"');
+      header('HTTP/1.0 401 Unauthorized');
+      echo 'Admin-Rechte für Padverwaltung benötigt.';
+      exit;
+  }
+}
+
+function requirePadAdmin($padId) {
+  global $pdo, $DB_PREFIX, $pwObj;
+  if (isset($_SERVER['PHP_AUTH_USER'])) {
+    $userStmt = $pdo->prepare("SELECT password FROM ${DB_PREFIX}users INNER JOIN ${DB_PREFIX}rel_user_group ON {$DB_PREFIX}rel_user_group.email = ${DB_PREFIX}users.email INNER JOIN ${DB_PREFIX}pads ON ${DB_PREFIX}pads.group_id = ${DB_PREFIX}rel_user_group.group_id WHERE ${DB_PREFIX}pads.id = ? AND ${DB_PREFIX}users.email = ?") or die(print_r($pdo->errorInfo(),true));
+    $userStmt->execute(Array($padId, $_SERVER['PHP_AUTH_USER'])) or die(print_r($userStmt->errorInfo(),true));
+    $res = $userStmt->fetchAll();
+    if (is_array($res) && count($res) == 1) {
+      $passwordHash = $res[0]["password"];
+      $password = $_SERVER['PHP_AUTH_PW'];
+      if (!$pwObj->hashVerify($password, $passwordHash)) {
+        unset($_SERVER['PHP_AUTH_USER']);
+      }
+    } else {
+      unset($_SERVER['PHP_AUTH_USER']);
+    }
+  }
+  if (isset($_SERVER['PHP_AUTH_PW']) && !isset($_SERVER['PHP_AUTH_USER'])) {
+    $padStmt = $pdo->prepare("SELECT adminPassword FROM ${DB_PREFIX}pads WHERE id = ? AND (adminPassword IS NOT NULL)") or die(print_r($pdo->errorInfo(),true));
+    $padStmt->execute(Array($padId, $_SERVER['PHP_AUTH_PW'])) or die(print_r($userStmt->errorInfo(),true));
+    $res = $padStmt->fetchAll();
+    if (is_array($res) && count($res) == 1) {
+      $passwordHash = $res[0]["adminPassword"];
+      $password = $_SERVER['PHP_AUTH_PW'];
+      if (!$pwObj->hashVerify($password, $passwordHash)) {
+        unset($_SERVER['PHP_AUTH_PW']);
+      }
+    } else {
+      unset($_SERVER['PHP_AUTH_PW']);
+    }
+  }
+
+  if (isset($_SERVER['PHP_AUTH_PW'])) {
+      header('WWW-Authenticate: Basic realm="XellPlan-NG"');
+      header('HTTP/1.0 401 Unauthorized');
+      echo 'Admin-Rechte für Padverwaltung benötigt.';
+      exit;
+  }
+}
+
 # vim: set expandtab tabstop=8 shiftwidth=8 :
