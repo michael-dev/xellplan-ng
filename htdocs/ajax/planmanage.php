@@ -1,5 +1,4 @@
 <?php
-
 global $pdo, $DB_PREFIX, $pwObj;
 include '../../lib/inc.all.php';
 
@@ -16,7 +15,7 @@ switch ($_REQUEST["action"]):
      $tmplPlanStmt->execute(Array($planId, $_REQUEST["template"])) or httperror($tmplPlanStmt->errorInfo());
    }
    $result["id"] = $planId;
-   $pads = $pdo->prepare("SELECT group_id, section_id, id, name, comment, eventStart, eventEnd, editStart, editEnd, creator, (editPassword IS NOT NULL) AS editPassword, (adminPassword IS NOT NULL) AS adminPassword FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
+   $pads = $pdo->prepare("SELECT group_id, section_id, id, name, comment, eventStart, eventEnd, editStart, editEnd, creator, (editPassword IS NOT NULL) AS editPassword, (adminPassword IS NOT NULL) AS adminPassword, ( (editEnd > NOW()) AND (editStart < NOW()) ) AS userEditable FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
    $pads->execute(Array($planId)) or httperror($pads->errorInfo());
    $rows = $pads->fetchAll(PDO::FETCH_ASSOC);
    $result["meta"] = $rows[0];
@@ -52,6 +51,25 @@ switch ($_REQUEST["action"]):
  break;
  case "setCell":
    requirePadAdmin($_REQUEST["id"]);
+   $padDataStmt = $pdo->prepare("SELECT COUNT(*) AS ctn FROM ${DB_PREFIX}pad_data WHERE pad_id = ? AND row = ? AND col = ?") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
+   $rows = $padDataStmt->fetchAll();
+   if ($rows[0][0] == 0) {
+     $padDataStmt = $pdo->prepare("INSERT INTO ${DB_PREFIX}pad_data (pad_id, row, col) VALUES (?, ?, ?)") or httperror($pdo->errorInfo());
+     $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
+   }
+   if (isset($_REQUEST["text"])) {
+     $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_data SET text = ? WHERE pad_id = ? AND row = ? AND col = ?") or httperror($pdo->errorInfo());
+     $padDataStmt->execute(Array($_REQUEST["text"], $_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
+   }
+   if (isset($_REQUEST["editable"])) {
+     $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_data SET userEditField = ? WHERE pad_id = ? AND row = ? AND col = ?") or httperror($pdo->errorInfo());
+     $padDataStmt->execute(Array($_REQUEST["editable"], $_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
+   }
+   if (isset($_REQUEST["classes"])) {
+     $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_data SET classes = ? WHERE pad_id = ? AND row = ? AND col = ?") or httperror($pdo->errorInfo());
+     $padDataStmt->execute(Array(implode(",",$_REQUEST["classes"]), $_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
+   }
  break;
  default:
    httperror("invalid action");

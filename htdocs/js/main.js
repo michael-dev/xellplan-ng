@@ -114,8 +114,8 @@ xp.addCell = function(col, row, editable) {
   var colClass = xp.getColClass(col);
   var cellId = xp.getCellId(col, row, edit);
   var data = {'col':col, 'row':row};
-  var text = xp.getCellData(row, col, (editable > 0));
-  var classes = xp.getCellClasses(row, col);
+  var text = xp.getCellData(col, row, (editable > 0));
+  var classes = xp.getCellClasses(col, row);
 
   // construct cell
   var cell;
@@ -156,11 +156,10 @@ xp.addCell = function(col, row, editable) {
                   );
     cell.bind('resizestop', data, xp.onCellResize);
     cell.bind('resize', data, xp.onCellResizeProg);
-  } else if (xp.isUserEditField(row, col) && (editable == 0)) {
+  } else if (xp.userCanEditField(col, row) && (editable == 0)) {
     cell.click(data, xp.onCellClickForUser);
   }
   cell.appendTo($('#' + xp.containerId));
-  xp.resizeTable();
   if (edit) {
     cell.focus();
   }
@@ -227,6 +226,7 @@ xp.onClickProp = function(event) {
         xp.cellAddClass(xp.currentFocus.col, xp.currentFocus.row, v.value);
       });
   }
+  xp.saveCell(xp.currentFocus.col, xp.currentFocus.row);
   var cellId = xp.getCellId(xp.currentFocus.col, xp.currentFocus.row, true);
   $('#'+cellId).focus();
 }
@@ -278,7 +278,7 @@ xp.onCellFocus = function(event) {
 }
 
 xp.configureToolbar = function(col,row) {
-  var classes = xp.getCellClasses(row, col);
+  var classes = xp.getCellClasses(col, row);
   $('#toolbar').show();
   $( "#bold" ).attr('checked', $.inArray('bold', classes) != -1);
   $( "#italics" ).attr('checked', $.inArray('italics', classes) != -1);
@@ -306,7 +306,14 @@ xp.onCellClickForUser = function(event) {
 }
 
 xp.onCellClickForAdmin = function(event) {
+  if (event.data.col + 1 == xp.numCol) {
+    xp.addCells(xp.numCol + 1, xp.numRow);
+  }
+  if (event.data.row + 1 == xp.numRow) {
+    xp.addCells(xp.numCol, xp.numRow + 1);
+  }
   xp.addCell(event.data.col,event.data.row,2);
+  xp.resizeTable();
   event.stopPropagation();
 }
 
@@ -325,21 +332,22 @@ xp.onCellConfirm = function(event) {
   $('#toolbar').hide();
   if (event.data.confirm) {
     xp.updateCell(event.data.col, event.data.row, text, false);
+    xp.saveCell(event.data.col, event.data.row);
   }
   event.stopPropagation();
 }
 
-xp.updateCell = function(col, row, text = '', edit = false) {
+xp.updateCell = function(col, row, text, edit) {
   xp.setCellData(col,row,text);
   var cellId = xp.getCellId(col, row, edit);
   if (edit) {
-    content = $('#'+cellId).val(text);
+    $('#'+cellId).val(text);
   } else {
-    content = $('#'+cellId).text(text);
+    $('#'+cellId).text(text);
   }
 }
 
-xp.destroyCell = function(col, row, edit = false) {
+xp.destroyCell = function(col, row, edit) {
   var cellId = xp.getCellId(col, row, edit);
   var content;
   if (edit) {
@@ -356,28 +364,61 @@ xp.clearTable = function() {
   container.empty();
 }
 
-xp.initTable = function() {
-  xp.clearTable();
-  var editable = 0;
+xp.addCells = function(numCol, numRow) {
+  if (numCol < xp.numCol || numRow < xp.numRow) {
+    alert('addCells cannot downsize');
+    return;
+  }
+  var editable;
   if (xp.adminMode) {
     editable = 1;
-    $('#admintoolbar').show();
   } else {
-    $('#admintoolbar').hide();
+    editable = 0;
   }
-  // add header
-  xp.addCell(-1, -1);
-  for (var i=0; i < xp.numCol; i++) {
-    xp.addCell(i, -1);
+  // existing rows: add new columns
+  for (var col = xp.numCol; col < numCol; col++) {
+    xp.addCell(col, -1);
+    for (var row = 0; row < xp.numRow; row++) {
+      xp.addCell(col, row, editable);
+    }
   }
-  // add data
-  for (var row = 0; row < xp.numRow; row++) {
+  // existing columns: add new rows
+  for (var row = xp.numRow; row < numRow; row++) {
     xp.addCell(-1, row);
     for (var col = 0; col < xp.numCol; col++) {
       xp.addCell(col, row, editable);
     }
   }
+  // add lower right corner
+  for (var row = xp.numRow; row < numRow; row++) {
+    for (var col = xp.numCol; col < numCol; col++) {
+      xp.addCell(col, row, editable);
+    }
+  }
+  // update internal size vars
+  xp.numCol = numCol;
+  xp.numRow = numRow;
+  // update column and rows size
+  xp.resizeTable();
+}
 
+xp.initTable = function() {
+  // save size
+  var numCol = xp.numCol;
+  var numRow = xp.numRow;
+  // init toolbar
+  if (xp.adminMode) {
+    $('#admintoolbar').show();
+  } else {
+    $('#admintoolbar').hide();
+  }
+  // add -1,-1 header field
+  xp.clearTable();
+  xp.addCell(-1, -1);
+  xp.numCol = 0;
+  xp.numRow = 0;
+  // size table
+  xp.addCells(numCol, numRow);
 }
 
 xp.setCellData = function(col, row, text) {
@@ -402,11 +443,66 @@ xp.setCellData = function(col, row, text) {
   }
 }
 
-xp.isUserEditField = function(row, col) {
+xp.saveCell = function(col, row) {
+  var data = {};
+  data.action = 'setCell';
+  data.id = xp.currentPlanId.id;
+  data.col = col;
+  data.row = row;
+  if (xp.data[row] && xp.data[row][col] && xp.data[row][col]['classes']) {
+    data.classes = xp.data[row][col]['classes'];
+  }
+  if (xp.data[row] && xp.data[row][col] && xp.data[row][col]['text']) {
+    data.text = xp.data[row][col]['text'];
+  }
+  if (xp.data[row] && xp.data[row][col] && xp.data[row][col]['userEditField']) {
+    data.editable = xp.data[row][col]['userEditField'];
+  }
+
+  var cellId1 = xp.getCellId(col, row, false);
+  var cellId2 = xp.getCellId(col, row, true);
+  $('#'+cellId1).addClass('saveInProgress');
+  $('#'+cellId2).addClass('saveInProgress');
+
+  $.post('ajax/planmanage.php', data)
+   .success(function (values, status, req) {
+     $('#'+cellId1).removeClass('saveInProgress');
+     $('#'+cellId2).removeClass('saveInProgress');
+    })
+   .error(xp.ajaxErrorHandler);
+}
+
+xp.userCanEditField = function(col, row) {
+  if (!xp.isUserEditField(col, row)) { return false; }
+  var planId = xp.currentPlanId.id;
+  var group = xp.currentPlanId.group;
+  var section = xp.currentPlanId.section;
+  var plan = xp.pads[group][section][planId];
+  return (plan.userEditable == 1);
+}
+
+xp.isUserEditField = function(col, row) {
   return (xp.data[row] && xp.data[row][col] && (xp.data[row][col]['userEditField'] == 1));
 }
 
-xp.getCellData = function(row, col, edit) {
+xp.getDataSize = function() {
+  var numRow = 10;
+  var numCol = 10;
+  // row,col starts counting with 0
+  for (var row in xp.data) {
+    if (numRow < parseInt(row) + 1) {
+      numRow = parseInt(row) + 1;
+    }
+    for (var col in xp.data[row]) {
+      if (numCol < parseInt(col) + 1) {
+        numCol = parseInt(col) + 1;
+      }
+    }
+  }
+  return [numCol, numRow];
+}
+
+xp.getCellData = function(col, row, edit) {
   if (row == -1 && col == -1) {
     return '';
   } else if (row == -1) {
@@ -415,7 +511,7 @@ xp.getCellData = function(row, col, edit) {
     return row+'.';
   }
   if ((!edit)
-      && xp.isUserEditField(row, col)
+      && xp.isUserEditField(col, row)
       && xp.ass[row] && xp.ass[row][col]) {
     return xp.ass[row][col]['name'];
   }
@@ -425,12 +521,12 @@ xp.getCellData = function(row, col, edit) {
   return '';
 }
 
-xp.getCellClasses = function(row, col) {
+xp.getCellClasses = function(col, row) {
   var cls = ['fontsize1'];
   if (xp.data[row] && xp.data[row][col] && xp.data[row][col]['classes']) {
     cls = xp.data[row][col]['classes'];
   }
-  if (xp.isUserEditField(row, col)) {
+  if (xp.isUserEditField(col, row)) {
     cls.push('variable');
   }
   return cls;
@@ -745,6 +841,9 @@ xp.switchToPlan = function(data) {
    .success(function (values, status, req) {
      xp.data = values.data;
      xp.ass = values.assistant;
+     var size = xp.getDataSize();
+     xp.numCol = size[0];
+     xp.numRow = size[1];
      xp.configureUserToolbar();
      xp.configureAdminToolbar();
      $("#tabs").tabs("select", "#plan");

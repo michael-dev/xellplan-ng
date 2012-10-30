@@ -12,6 +12,7 @@ switch ($_REQUEST["action"]):
   $rows = $padDataStmt->fetchAll();
   $result["data"] = Array();
   foreach ($rows as $row) {
+    $row["classes"] = explode(",", $row["classes"]);
     $result["data"][$row["row"]][$row["col"]] = $row;
   }
   $padAssStmt = $pdo->prepare("SELECT row, col, name, organization, email FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ?") or httperror($pdo->errorInfo());
