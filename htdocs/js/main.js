@@ -239,7 +239,7 @@ xp.cellAddClass = function(col, row, propClass) {
   $('#'+cellId).addClass(propClass);
   if (!xp.data[row]) {  xp.data[row] = {}; }
   if (!xp.data[row][col]) { xp.data[row][col] = {}; }
-  if (!xp.data[row][col].hasOwnProperty('classes')) { xp.data[row][col]['classes'] = []; }
+  if (!Object.prototype.hasOwnProperty.call(xp.data[row][col], 'classes')) { xp.data[row][col]['classes'] = []; }
   if (propClass == 'variable') {
     xp.data[row][col]['userEditField'] = 1;
   } else {
@@ -253,7 +253,7 @@ xp.cellDelClass = function(col, row, propClass) {
   $('#'+cellId).removeClass(propClass);
   cellId = xp.getCellId(col, row, true);
   $('#'+cellId).removeClass(propClass);
-  if (xp.data[row] && xp.data[row][col] && xp.data[row][col].hasOwnProperty('classes')) {
+  if (xp.data[row] && xp.data[row][col] && Object.prototype.hasOwnProperty.call(xp.data[row][col], 'classes')) {
     xp.data[row][col]['classes'] = jQuery.grep(xp.data[row][col]['classes'], function(n) { return n != propClass; });
   }
   if (propClass == 'variable') {
@@ -451,16 +451,18 @@ xp.saveCell = function(col, row) {
   data.id = xp.currentPlanId.id;
   data.col = col;
   data.row = row;
-  if (xp.data[row] && xp.data[row][col] && xp.data[row][col].hasOwnProperty('classes')) {
+  if (xp.data[row] && xp.data[row][col] && Object.prototype.hasOwnProperty.call(xp.data[row][col], 'classes')) {
     data.classes = xp.data[row][col]['classes'];
+    if (data.classes.length == 0) {
+      data.classes = null;
+    }
   }
-  if (xp.data[row] && xp.data[row][col] && xp.data[row][col].hasOwnProperty('text')) {
+  if (xp.data[row] && xp.data[row][col] && Object.prototype.hasOwnProperty.call(xp.data[row][col], 'text')) {
     data.text = xp.data[row][col]['text'];
   }
-  if (xp.data[row] && xp.data[row][col] && xp.data[row][col].hasOwnProperty('userEditField')) {
+  if (xp.data[row] && xp.data[row][col] && Object.prototype.hasOwnProperty.call(xp.data[row][col], 'userEditField')) {
     data.editable = xp.data[row][col]['userEditField'];
   }
-
   var cellId1 = xp.getCellId(col, row, false);
   var cellId2 = xp.getCellId(col, row, true);
   $('#'+cellId1).addClass('saveInProgress');
@@ -517,7 +519,7 @@ xp.getCellData = function(col, row, edit) {
       && xp.ass[row] && xp.ass[row][col]) {
     return xp.ass[row][col]['name'];
   }
-  if (xp.data[row] && xp.data[row][col] && xp.data[row][col].hasOwnProperty('text')) {
+  if (xp.data[row] && xp.data[row][col] && Object.prototype.hasOwnProperty.call(xp.data[row][col], 'text')) {
     return xp.data[row][col]['text'];
   }
   return '';
@@ -525,7 +527,7 @@ xp.getCellData = function(col, row, edit) {
 
 xp.getCellClasses = function(col, row) {
   var cls = ['fontsize1'];
-  if (xp.data[row] && xp.data[row][col] && xp.data[row][col].hasOwnProperty('classes')) {
+  if (xp.data[row] && xp.data[row][col] && Object.prototype.hasOwnProperty.call(xp.data[row][col], 'classes')) {
     cls = xp.data[row][col]['classes'];
   }
   if (xp.isUserEditField(col, row)) {
