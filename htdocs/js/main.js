@@ -232,13 +232,14 @@ xp.onClickProp = function(event) {
 }
 
 xp.cellAddClass = function(col, row, propClass) {
-  var cellId = xp.getCellId(col, row, false);
+  var cellId;
+  cellId = xp.getCellId(col, row, false);
   $('#'+cellId).addClass(propClass);
-  var cellId = xp.getCellId(col, row, true);
+  cellId = xp.getCellId(col, row, true);
   $('#'+cellId).addClass(propClass);
   if (!xp.data[row]) {  xp.data[row] = {}; }
   if (!xp.data[row][col]) { xp.data[row][col] = {}; }
-  if (!xp.data[row][col]['classes']) { xp.data[row][col]['classes'] = []; }
+  if (!xp.data[row][col].hasOwnProperty('classes')) { xp.data[row][col]['classes'] = []; }
   if (propClass == 'variable') {
     xp.data[row][col]['userEditField'] = 1;
   } else {
@@ -247,11 +248,12 @@ xp.cellAddClass = function(col, row, propClass) {
 }
 
 xp.cellDelClass = function(col, row, propClass) {
-  var cellId = xp.getCellId(col, row, false);
+  var cellId;
+  cellId = xp.getCellId(col, row, false);
   $('#'+cellId).removeClass(propClass);
-  var cellId = xp.getCellId(col, row, true);
+  cellId = xp.getCellId(col, row, true);
   $('#'+cellId).removeClass(propClass);
-  if (xp.data[row] && xp.data[row][col] && xp.data[row][col]['classes']) {
+  if (xp.data[row] && xp.data[row][col] && xp.data[row][col].hasOwnProperty('classes')) {
     xp.data[row][col]['classes'] = jQuery.grep(xp.data[row][col]['classes'], function(n) { return n != propClass; });
   }
   if (propClass == 'variable') {
@@ -449,13 +451,13 @@ xp.saveCell = function(col, row) {
   data.id = xp.currentPlanId.id;
   data.col = col;
   data.row = row;
-  if (xp.data[row] && xp.data[row][col] && xp.data[row][col]['classes']) {
+  if (xp.data[row] && xp.data[row][col] && xp.data[row][col].hasOwnProperty('classes')) {
     data.classes = xp.data[row][col]['classes'];
   }
-  if (xp.data[row] && xp.data[row][col] && xp.data[row][col]['text']) {
+  if (xp.data[row] && xp.data[row][col] && xp.data[row][col].hasOwnProperty('text')) {
     data.text = xp.data[row][col]['text'];
   }
-  if (xp.data[row] && xp.data[row][col] && xp.data[row][col]['userEditField']) {
+  if (xp.data[row] && xp.data[row][col] && xp.data[row][col].hasOwnProperty('userEditField')) {
     data.editable = xp.data[row][col]['userEditField'];
   }
 
@@ -515,7 +517,7 @@ xp.getCellData = function(col, row, edit) {
       && xp.ass[row] && xp.ass[row][col]) {
     return xp.ass[row][col]['name'];
   }
-  if (xp.data[row] && xp.data[row][col] && xp.data[row][col]['text']) {
+  if (xp.data[row] && xp.data[row][col] && xp.data[row][col].hasOwnProperty('text')) {
     return xp.data[row][col]['text'];
   }
   return '';
@@ -523,7 +525,7 @@ xp.getCellData = function(col, row, edit) {
 
 xp.getCellClasses = function(col, row) {
   var cls = ['fontsize1'];
-  if (xp.data[row] && xp.data[row][col] && xp.data[row][col]['classes']) {
+  if (xp.data[row] && xp.data[row][col] && xp.data[row][col].hasOwnProperty('classes')) {
     cls = xp.data[row][col]['classes'];
   }
   if (xp.isUserEditField(col, row)) {
@@ -575,7 +577,7 @@ xp.refreshUserGroupListHandler = function(values) {
 xp.onSelectUser = function() {
   var currentUser = $('#userlist').val();
   $('#usrgrplist').empty();
-  if (currentUser == '') {
+  if (currentUser == '' || currentUser == null) {
     $('#user_email').val('');
     $('#user_password').val('');
     $('#user_admin').attr('checked', false);
@@ -596,7 +598,7 @@ xp.onDeleteGroup = function(event) {
   event.stopPropagation();
 
   var currentGroup = $('#grplist').val();
-  if (currentGroup == '') {
+  if (currentGroup == '' || currentGroup == null) {
     return false;
   }
   data.group = currentGroup;
@@ -616,7 +618,7 @@ xp.onDeleteUser = function(event) {
   event.stopPropagation();
 
   var currentUser = $('#userlist').val();
-  if (currentUser == '') {
+  if (currentUser == '' || currentUser == null) {
     return false;
   }
   data.uid = currentUser;
@@ -637,11 +639,11 @@ xp.onSaveUser = function(event) {
   event.stopPropagation();
 
   var currentUser = $('#userlist').val();
-  var emailOld = (currentUser == '' ? null : xp.users[currentUser].email);
+  var emailOld = (currentUser == '' || currentUser == null ? null : xp.users[currentUser].email);
   var emailNew = $('#user_email').val();
-  var pwOld = (currentUser == '' ? null : xp.users[currentUser].password);
+  var pwOld = (currentUser == '' || currentUser == null ? null : xp.users[currentUser].password);
   var pwNew = $('#user_password').val();
-  var adminOld = (currentUser == '' ? null : xp.users[currentUser].admin);
+  var adminOld = (currentUser == '' || currentUser == null ? null : xp.users[currentUser].admin);
   var adminNew = ($('#user_admin').attr('checked') ? 1 : 0);
 
   data.uid = currentUser;
@@ -679,7 +681,7 @@ xp.onCreateGroup = function(event) {
   event.stopPropagation();
 
   var newGrp = $('#grp').val();
-  if (newGrp == '') {
+  if (newGrp == '' || newGrp == null) {
     return false;
   }
 
@@ -744,7 +746,7 @@ xp.onSelectGroup = function() {
   $('#grp').val('');
   $('#grpadm').empty();
   var currentGroup = $('#grplist').val();
-  if (currentGroup == '') {
+  if (currentGroup == '' || currentGroup == null) {
     return false;
   }
   for (var k in xp.groups[currentGroup].members) {
@@ -861,9 +863,11 @@ xp.configureUserToolbar = function() {
   $('#usertoolbar_name').text(plan.name);
   $('#usertoolbar_from').text(plan.eventStart);
   $('#usertoolbar_to').text(plan.eventEnd);
+  $('#usertoolbar_comment').text(plan.comment);
   $("#toadmin").attr('checked', xp.adminMode);
   $("#toadmin").button("refresh");
 }
+
 xp.configureAdminToolbar = function() {
   var data = xp.currentPlanId;
   var planId = data.id;
@@ -875,18 +879,32 @@ xp.configureAdminToolbar = function() {
   $('#admintoolbar_section_id').val(plan.section_id);
   $('#admintoolbar_id').text(plan.id);
   $('#admintoolbar_name').val(plan.name);
+  var lines = plan.comment.match(/^.*((\r\n|\n|\r)|$)/gm);
+  var commentRows = lines.length + 3;
+  var commentCols = 40;
+  for (var line in lines) {
+    if (commentCols < line.length + 4) {
+      commentCols = line.length + 4;
+    }
+  }
   $('#admintoolbar_comment').val(plan.comment);
+  $('#admintoolbar_comment').attr('rows', commentRows);
+  $('#admintoolbar_comment').attr('cols', commentCols);
   $('#admintoolbar_eventStart').val(plan.eventStart);
   $('#admintoolbar_eventEnd').val(plan.eventEnd);
   $('#admintoolbar_editStart').val(plan.editStart);
   $('#admintoolbar_editEnd').val(plan.editEnd);
   $('#admintoolbar_creator').text(plan.creator);
-  $('#admintoolbar_contact').text(plan.contact);
+  $('#admintoolbar_contact').val(plan.contact);
   if (plan.editPassword == 1) {
     $('#admintoolbar_editPassword').val('**gesetzt**');
+  } else {
+    $('#admintoolbar_editPassword').val('');
   }
   if (plan.adminPassword == 1) {
     $('#admintoolbar_adminPassword').val('**gesetzt**');
+  } else {
+    $('#admintoolbar_adminPassword').val('');
   }
 }
 
@@ -963,6 +981,11 @@ xp.onSavePlan = function(event) {
   $.post('ajax/planmanage.php', data)
    .success(function (values, textStatus, jqXHR) {
     alert('Meta-Daten wurden gespeichert.');
+    var planId = xp.currentPlanId.id;
+    var group = xp.currentPlanId.group;
+    var section = xp.currentPlanId.section;
+    xp.pads[group][section][planId] = values.data;
+    xp.configureUserToolbar();
   })
   .error(xp.ajaxErrorHandler);
 
@@ -997,7 +1020,7 @@ xp.switchTplListToSection = function(event) {
     event.stopPropagation();
   }
   var group = $('#grplist4').val();
-  if (group == '') {
+  if (group == '' || group == null) {
     return;
   }
   $('#ulplanlist2').empty();

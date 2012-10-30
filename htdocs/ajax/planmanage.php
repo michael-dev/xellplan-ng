@@ -40,6 +40,9 @@ switch ($_REQUEST["action"]):
      $updPlanStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pads SET $key = ? WHERE id = ?") or httperror($pdo->errorInfo());
      $updPlanStmt->execute(Array($value, $_REQUEST["id"])) or httperror($updPlanStmt->errorInfo());
    }
+   $pads = $pdo->prepare("SELECT group_id, section_id, id, name, comment, eventStart, eventEnd, editStart, editEnd, creator, (editPassword IS NOT NULL) AS editPassword, (adminPassword IS NOT NULL) AS adminPassword, ( (editEnd > NOW()) AND (editStart < NOW()) ) AS userEditable FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
+   $pads->execute(Array($_REQUEST["id"])) or httperror($pads->errorInfo());
+   $result["data"] = $pads->fetch(PDO::FETCH_ASSOC);
  break;
  case "createTemplate":
    requireGroupAdmin($_REQUEST["group"]);
