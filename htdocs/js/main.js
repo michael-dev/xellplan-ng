@@ -881,6 +881,7 @@ xp.configureAdminToolbar = function() {
   $('#admintoolbar_editStart').val(plan.editStart);
   $('#admintoolbar_editEnd').val(plan.editEnd);
   $('#admintoolbar_creator').text(plan.creator);
+  $('#admintoolbar_contact').text(plan.contact);
   if (plan.editPassword == 1) {
     $('#admintoolbar_editPassword').val('**gesetzt**');
   }
@@ -947,6 +948,7 @@ xp.onSavePlan = function(event) {
   data.eventEnd = $('#admintoolbar_eventEnd').val();
   data.editStart = $('#admintoolbar_editStart').val();
   data.editEnd = $('#admintoolbar_editEnd').val();
+  data.contact = $('#admintoolbar_contact').val();
   data.editPassword = $('#admintoolbar_editPassword').val();
   data.adminPassword = $('#admintoolbar_adminPassword').val();
 

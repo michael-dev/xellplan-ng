@@ -23,6 +23,7 @@ if ($r === false) {
                                                 editStart DATETIME DEFAULT NULL,
                                                   editEnd DATETIME DEFAULT NULL,
                                                   creator VARCHAR(128) NOT NULL,
+						  contact VARCHAR(128) DEFAULT NULL,
                                              editPassword VARCHAR(128) DEFAULT NULL,
                                             adminPassword VARCHAR(128) DEFAULT NULL,
                                                   PRIMARY KEY (id) );") or die(print_r($pdo->errorInfo(),true));

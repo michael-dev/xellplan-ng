@@ -33,7 +33,7 @@ switch ($_REQUEST["action"]):
  break;
  case "savePlan":
    requirePadAdmin($_REQUEST["id"]);
-   foreach (Array('section_id', 'id', 'name', 'comment', 'eventStart', 'eventEnd', 'editStart', 'editEnd', 'editPassword', 'adminPassword') AS $key) {
+   foreach (Array('section_id', 'id', 'name', 'comment', 'eventStart', 'eventEnd', 'editStart', 'editEnd', 'contact', 'editPassword', 'adminPassword') AS $key) {
      if (!isset($_REQUEST[$key])) { continue; }
      $value = $_REQUEST[$key];
      if (empty($value)) { $value = NULL; }
