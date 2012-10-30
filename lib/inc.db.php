@@ -100,7 +100,7 @@ function requireAdminAuth() {
   }
   
   if (!isset($_SERVER['PHP_AUTH_USER'])) {
-      header('WWW-Authenticate: Basic realm="XellPlan-NG"');
+      header('WWW-Authenticate: Basic realm="XellPlan-NG Administrator"');
       header('HTTP/1.0 401 Unauthorized');
       echo 'Admin-Rechte für Nutzerverwaltung benötigt.';
       exit;
@@ -131,7 +131,7 @@ function requireGroupAdmin($groupId) {
   }
   
   if (!isset($_SERVER['PHP_AUTH_USER'])) {
-      header('WWW-Authenticate: Basic realm="XellPlan-NG"');
+      header('WWW-Authenticate: Basic realm="XellPlan-NG Gruppeadministrator "'.$groupId);
       header('HTTP/1.0 401 Unauthorized');
       echo 'Admin-Rechte für Gruppe '.htmlspecialchars($groupId).' benötigt.';
       exit;
@@ -176,7 +176,7 @@ function requirePadAdmin($padId) {
   }
 
   if (isset($_SERVER['PHP_AUTH_PW'])) {
-      header('WWW-Authenticate: Basic realm="XellPlan-NG"');
+      header('WWW-Authenticate: Basic realm="XellPlan-NG Plan-Administrator "'.$planId);
       header('HTTP/1.0 401 Unauthorized');
       echo 'Admin-Rechte für Pad '.htmlspecialchars($padId).' benötigt.';
       exit;
