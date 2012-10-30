@@ -7,15 +7,23 @@ $result = Array();
 
 switch ($_REQUEST["action"]):
  case "listPlanData":
-  $padDataStmt = $pdo->prepare("SELECT row, col, text, classes, userEditField FROM ${DB_PREFIX}pad_data WHERE pad_id = ?") or die(print_r($pdo->errorInfo(),true));
-  $padDataStmt->execute(Array($_REQUEST["id"])) or die(print_r($padDataStmt->errorInfo(),true));
+  $padDataStmt = $pdo->prepare("SELECT row, col, text, classes, userEditField FROM ${DB_PREFIX}pad_data WHERE pad_id = ?") or httperror($pdo->errorInfo());
+  $padDataStmt->execute(Array($_REQUEST["id"])) or httperror($padDataStmt->errorInfo());
   $rows = $padDataStmt->fetchAll();
+  $result["data"] = Array();
   foreach ($rows as $row) {
-    $result[$row["row"]][$row["col"]] = $row;
+    $result["data"][$row["row"]][$row["col"]] = $row;
+  }
+  $padAssStmt = $pdo->prepare("SELECT row, col, name, organization, email FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ?") or httperror($pdo->errorInfo());
+  $padAssStmt->execute(Array($_REQUEST["id"])) or httperror($padDataStmt->errorInfo());
+  $rows = $padAssStmt->fetchAll();
+  $result["assistant"] = Array();
+  foreach ($rows as $row) {
+    $result["assistant"][$row["row"]][$row["col"]] = $row;
   }
  break;
  default:
-  die("invalid action");
+  httperror("invalid action");
  break;
 endswitch;
 

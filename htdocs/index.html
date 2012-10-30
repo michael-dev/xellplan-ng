@@ -3,9 +3,11 @@
   <title>Aufgabenplaner</title>
   <script type="text/javascript" src="js/jquery-1.8.2.js"></script>
   <script type="text/javascript" src="js/jquery-ui-1.9.0.custom.js"></script>
+  <script type="text/javascript" src="js/jquery-ui-timepicker-addon.js"></script>
   <script type="text/javascript" src="js/main.js"></script>
-  <link rel="stylesheet" type="text/css" href="css/main.css"/>
   <link rel="stylesheet" type="text/css" href="css/jquery-ui-1.9.0.custom.css"/>
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui-timepicker-addon.css"/>
+  <link rel="stylesheet" type="text/css" href="css/main.css"/>
  </head>
  <body>
   <noscript>
@@ -34,14 +36,42 @@
         <div><button id="plan_create">Anlegen</button></div>
       </form>
       </fieldset>
+      <fieldset><legend>Vorlagen verwalten</legend>
+      <form action="#">
+        <label for="grplist">Gruppe:</label> <select id="grplist4" class="grplist" name="grplist"></select>
+      </form>
+      <ul id="ulplanlist2">
+      </ul>
+      </fieldset>
     </div>
     <div id="plan" class="tab">
-      <div id="header">
-       <form action="#">
-	<a href="#">Zur Vorlage machen</a>
-	<a href="#">Löschen</a>
-       </form>
-      </div>
+     <form action="#">
+      <span id="usertoolbar" class="ui-widget-header ui-corner-all">
+        <span id="usertoolbar_name"></span>
+        von: <span id="usertoolbar_from"></span>
+        bis: <span id="usertoolbar_to"></span>
+        <input type="checkbox" id="toadmin" value='admin'/><label for="toadmin">Administration</label>
+      </span>
+      <span id="admintoolbar" class="ui-widget-header ui-corner-all">
+        <button id="totemplate">Vorlage erstellen</button>
+        <button id="deleteplan">Plan löschen</button>
+        <button id="saveplan">Meta-Daten speichern</button>
+	<fieldset><legend>Meta-Daten</legend>
+        <div><label for="group_id">Gruppe</label>: <span id="admintoolbar_group_id"/></div>
+        <div><label for="section_id">Bereich</label>: <input type="text" id="admintoolbar_section_id" name="section_id"/></div>
+        <div><label for="id">Nr</label>: <span id="admintoolbar_id"/></div>
+        <div><label for="name">Name</label>: <input type="text" id="admintoolbar_name" name="name"/></div>
+	<hr/>
+        <div><label for="comment">Kommentar</label>: <textarea type="text" id="admintoolbar_comment" name="comment"></textarea></div>
+        <div><label for="eventStart">Event-Start</label>: <input type="text" id="admintoolbar_eventStart" name="eventStart"/></div>
+        <div><label for="eventEnd">Event-End</label>: <input type="text" id="admintoolbar_eventEnd" name="eventEnd"/></div>
+        <div><label for="editStart">Bearbeiten ab</label>: <input type="text" id="admintoolbar_editStart" name="editStart"/></div>
+        <div><label for="editEnd">Bearbeiten bis</label>: <input type="text" id="admintoolbar_editEnd" name="editEnd"/></div>
+        <div><label for="creator">Angelegt von</label>: <span id="admintoolbar_creator"/></div>
+        <div><label for="editPassword">Passwort für Nutzer</label>: <input type="text" id="admintoolbar_editPassword" name="editPassword"/></div>
+        <div><label for="adminPassword">Passwort für Admins</label>: <input type="text" id="admintoolbar_adminPassword" name="adminPassword"/></div>
+	</fieldset>
+      </span>
       <span id="toolbar" class="ui-widget-header ui-corner-all">
         <button id="save">save</button>
      
@@ -56,8 +86,9 @@
           <input type="radio" id="fontsize2" name="fontsize" value='bigFontsize'/><label for="fontsize2" title='große Schriftgröße'>+1</label>
         </span>
       </span>
-      <div id="content">
-      </div>
+     </form>
+     <div id="content">
+     </div>
     </div>
     <div id="usermgnt" class="tab">
       <form action="#">

@@ -11,10 +11,14 @@ xp.colWidths = { '-1' : 30 };
 xp.rowHeights = {};
 xp.borderWidth = 1;
 xp.paddingWidth = 2;
-xp.data = { 0: { 0: {text: 'hallo', classes : [ 'bold' ] } } };
+xp.data = {};
+xp.ass = {};
 xp.currentFocus = null;
 xp.users = {}
 xp.groups = {}
+xp.pads = {};
+xp.adminMode = false;
+xp.currentPlanId = null;
 
 /* 65 (A) - 90 (Z): 26 Zeichen */
 xp.colName = function(i) {
@@ -29,7 +33,7 @@ xp.colName = function(i) {
   return c;
 }
 
-xp.getColWidth = function(col, edit = false) {
+xp.getColWidth = function(col, edit) {
   var w = 0;
   if (edit) { // firefox 16.0.1: div width := inner width, input width := inner width + padding + border
     w += 2 * xp.borderWidth + 2 * xp.paddingWidth;
@@ -51,7 +55,7 @@ xp.getColLeft = function(col) {
   return left;
 }
 
-xp.getRowHeight = function(row,edit = false) {
+xp.getRowHeight = function(row,edit) {
   var h = 0;
   if (edit) { // firefox 16.0.1: div height := inner height, input height := inner height + padding + border
     h += 2 * xp.borderWidth + 2 * xp.paddingWidth;
@@ -110,7 +114,7 @@ xp.addCell = function(col, row, editable) {
   var colClass = xp.getColClass(col);
   var cellId = xp.getCellId(col, row, edit);
   var data = {'col':col, 'row':row};
-  var text = xp.getCellData(row, col);
+  var text = xp.getCellData(row, col, (editable > 0));
   var classes = xp.getCellClasses(row, col);
 
   // construct cell
@@ -124,7 +128,7 @@ xp.addCell = function(col, row, editable) {
   cell.addClass('xpCell');
   if (editable == 1) {
     cell.addClass('editable');
-    cell.click(data, xp.onCellClick);
+    cell.click(data, xp.onCellClickForAdmin);
   }
   cell.addClass(rowClass);
   cell.addClass(colClass);
@@ -133,7 +137,7 @@ xp.addCell = function(col, row, editable) {
   });
   if (edit) {
     cell.val(text);
-    cell.keydown(data, xp.onCellConfirm);
+    cell.keydown(data, xp.onCellKey);
     cell.focus(data, xp.onCellFocus);
     cell.blur(data, xp.onCellBlur);
   } else {
@@ -152,6 +156,8 @@ xp.addCell = function(col, row, editable) {
                   );
     cell.bind('resizestop', data, xp.onCellResize);
     cell.bind('resize', data, xp.onCellResizeProg);
+  } else if (xp.isUserEditField(row, col) && (editable == 0)) {
+    cell.click(data, xp.onCellClickForUser);
   }
   cell.appendTo($('#' + xp.containerId));
   xp.resizeTable();
@@ -233,7 +239,11 @@ xp.cellAddClass = function(col, row, propClass) {
   if (!xp.data[row]) {  xp.data[row] = {}; }
   if (!xp.data[row][col]) { xp.data[row][col] = {}; }
   if (!xp.data[row][col]['classes']) { xp.data[row][col]['classes'] = []; }
-  xp.data[row][col]['classes'].push(propClass);
+  if (propClass == 'variable') {
+    xp.data[row][col]['userEditField'] = 1;
+  } else {
+    xp.data[row][col]['classes'].push(propClass);
+  }
 }
 
 xp.cellDelClass = function(col, row, propClass) {
@@ -243,6 +253,9 @@ xp.cellDelClass = function(col, row, propClass) {
   $('#'+cellId).removeClass(propClass);
   if (xp.data[row] && xp.data[row][col] && xp.data[row][col]['classes']) {
     xp.data[row][col]['classes'] = jQuery.grep(xp.data[row][col]['classes'], function(n) { return n != propClass; });
+  }
+  if (propClass == 'variable') {
+    xp.data[row][col]['userEditField'] = 0;
   }
 }
 
@@ -281,23 +294,36 @@ xp.configureToolbar = function(col,row) {
   $( "#bold" ).button("refresh");
   $( "#italics" ).button("refresh");
   $( "#underline" ).button("refresh");
+  $( "#variable" ).button("refresh");
   $( "#fontsize" ).buttonset("refresh");
+  $( "#save" ).unbind('click');
+  $( "#save" ).click({'col': col, 'row':row, 'confirm': true}, xp.onCellConfirm);
 }
 
-xp.onCellClick = function(event) {
+xp.onCellClickForUser = function(event) {
+  alert(event.data.col, event.data.row);
+  event.stopPropagation();
+}
+
+xp.onCellClickForAdmin = function(event) {
   xp.addCell(event.data.col,event.data.row,2);
   event.stopPropagation();
 }
 
-xp.onCellConfirm = function(event) {
+xp.onCellKey = function(event) {
   if (event.which != 13 &&
       event.which != 27) {
     return;
   }
+  event.data.confirm = (event.which == 13);
+  xp.onCellConfirm(event);
+}
+
+xp.onCellConfirm = function(event) {
   var text = xp.destroyCell(event.data.col, event.data.row, true);
   xp.currentFocus = null;
   $('#toolbar').hide();
-  if (event.which == 13) {
+  if (event.data.confirm) {
     xp.updateCell(event.data.col, event.data.row, text, false);
   }
   event.stopPropagation();
@@ -332,6 +358,13 @@ xp.clearTable = function() {
 
 xp.initTable = function() {
   xp.clearTable();
+  var editable = 0;
+  if (xp.adminMode) {
+    editable = 1;
+    $('#admintoolbar').show();
+  } else {
+    $('#admintoolbar').hide();
+  }
   // add header
   xp.addCell(-1, -1);
   for (var i=0; i < xp.numCol; i++) {
@@ -341,13 +374,13 @@ xp.initTable = function() {
   for (var row = 0; row < xp.numRow; row++) {
     xp.addCell(-1, row);
     for (var col = 0; col < xp.numCol; col++) {
-      xp.addCell(col, row, 1);
+      xp.addCell(col, row, editable);
     }
   }
 
 }
 
-xp.setCellData = function(row, col, text) {
+xp.setCellData = function(col, row, text) {
   if (text != '') {
     if (!xp.data[row]) {
       xp.data[row] = {};
@@ -369,13 +402,22 @@ xp.setCellData = function(row, col, text) {
   }
 }
 
-xp.getCellData = function(row, col) {
+xp.isUserEditField = function(row, col) {
+  return (xp.data[row] && xp.data[row][col] && (xp.data[row][col]['userEditField'] == 1));
+}
+
+xp.getCellData = function(row, col, edit) {
   if (row == -1 && col == -1) {
     return '';
   } else if (row == -1) {
     return xp.colName(col);
   } else if (col == -1) {
     return row+'.';
+  }
+  if ((!edit)
+      && xp.isUserEditField(row, col)
+      && xp.ass[row] && xp.ass[row][col]) {
+    return xp.ass[row][col]['name'];
   }
   if (xp.data[row] && xp.data[row][col] && xp.data[row][col]['text']) {
     return xp.data[row][col]['text'];
@@ -384,10 +426,14 @@ xp.getCellData = function(row, col) {
 }
 
 xp.getCellClasses = function(row, col) {
+  var cls = ['fontsize1'];
   if (xp.data[row] && xp.data[row][col] && xp.data[row][col]['classes']) {
-    return xp.data[row][col]['classes'];
+    cls = xp.data[row][col]['classes'];
   }
-  return ['fontsize1'];
+  if (xp.isUserEditField(row, col)) {
+    cls.push('variable');
+  }
+  return cls;
 }
 
 xp.onTabChange = function(event, ui) {
@@ -406,15 +452,11 @@ xp.onTabChange = function(event, ui) {
 
 xp.refreshUserGroupList = function() {
   // 3. request
-  $.post('ajax/users.php', {'action':'list'}, function (values, status, req) {
-    if (typeof(values) != 'object') {
-      t = window.open('','fehler');
-      t.document.write(values);
-      t.document.close();
-      return;
-    }
-    xp.refreshUserGroupListHandler(values);
-  });
+  $.post('ajax/users.php', {'action':'list'})
+   .success(function (values, status, req) {
+      xp.refreshUserGroupListHandler(values);
+    })
+   .error(xp.ajaxErrorHandler);
 }
 
 xp.refreshUserGroupListHandler = function(values) {
@@ -463,16 +505,12 @@ xp.onDeleteGroup = function(event) {
   }
   data.group = currentGroup;
   data.action = 'deleteGroup';
-  $.post('ajax/users.php', data, function (values, status, req) {
-    if (typeof(values) != 'object') {
-      t = window.open('','fehler');
-      t.document.write(values);
-      t.document.close();
-      return;
-    }
-    alert('Die Gruppe wurde erfolgreich entfernt.');
-    xp.refreshUserGroupListHandler(values);
-  });
+  $.post('ajax/users.php', data)
+   .success(function (values, status, req) {
+     alert('Die Gruppe wurde erfolgreich entfernt.');
+     xp.refreshUserGroupListHandler(values);
+    })
+   .error(xp.ajaxErrorHandler);
   return false;
 }
 
@@ -487,16 +525,12 @@ xp.onDeleteUser = function(event) {
   }
   data.uid = currentUser;
   data.action = 'delete';
-  $.post('ajax/users.php', data, function (values, status, req) {
-    if (typeof(values) != 'object') {
-      t = window.open('','fehler');
-      t.document.write(values);
-      t.document.close();
-      return;
-    }
-    alert('Der Nutzer wurde erfolgreich entfernt.');
-    xp.refreshUserGroupListHandler(values);
-  });
+  $.post('ajax/users.php', data)
+   .success(function (values, status, req) {
+     alert('Der Nutzer wurde erfolgreich entfernt.');
+     xp.refreshUserGroupListHandler(values);
+    })
+   .error(xp.ajaxErrorHandler);
   return false;
 }
 
@@ -534,16 +568,12 @@ xp.onSaveUser = function(event) {
     return false;
   }
 
-  $.post('ajax/users.php', data, function (values, status, req) {
-    if (typeof(values) != 'object') {
-      t = window.open('','fehler');
-      t.document.write(values);
-      t.document.close();
-      return;
-    }
-    alert('Der Nutzer wurde erfolgreich gespeichert.');
-    xp.refreshUserGroupListHandler(values);
-  });
+  $.post('ajax/users.php', data)
+   .success(function (values, status, req) {
+     alert('Der Nutzer wurde erfolgreich gespeichert.');
+     xp.refreshUserGroupListHandler(values);
+    })
+   .error(xp.ajaxErrorHandler);
   return false;
 }
 
@@ -560,17 +590,13 @@ xp.onCreateGroup = function(event) {
   data.group = newGrp;
   data.action = 'insertGroup';
 
-  $.post('ajax/users.php', data, function (values, status, req) {
-    if (typeof(values) != 'object') {
-      t = window.open('','fehler');
-      t.document.write(values);
-      t.document.close();
-      return;
-    }
-    alert('Die Gruppe wurde erfolgreich gespeichert.');
-    $('#grp').val('');
-    xp.refreshUserGroupListHandler(values);
-  });
+  $.post('ajax/users.php', data)
+   .success(function (values, status, req) {
+     alert('Die Gruppe wurde erfolgreich gespeichert.');
+     $('#grp').val('');
+     xp.refreshUserGroupListHandler(values);
+    })
+   .error(xp.ajaxErrorHandler);
   return false;
 }
 
@@ -587,16 +613,12 @@ xp.onAssignToGroup = function(event) {
   data.action = 'addUserToGroup';
   data.group = group;
   data.user = currentUser;
-  $.post('ajax/users.php', data, function (values, status, req) {
-    if (typeof(values) != 'object') {
-      t = window.open('','fehler');
-      t.document.write(values);
-      t.document.close();
-      return;
-    }
-    alert('Die Gruppe wurde erfolgreich zugeordnet.');
-    xp.refreshUserGroupListHandler(values);
-  });
+  $.post('ajax/users.php', data)
+   .success(function (values, status, req) {
+     alert('Die Gruppe wurde erfolgreich zugeordnet.');
+     xp.refreshUserGroupListHandler(values);
+    })
+   .error(xp.ajaxErrorHandler);
   return false;
 }
 
@@ -613,16 +635,12 @@ xp.onUnassignFromGroup = function(event) {
   data.action = 'removeUserFromGroup';
   data.group = group;
   data.user = currentUser;
-  $.post('ajax/users.php', data, function (values, status, req) {
-    if (typeof(values) != 'object') {
-      t = window.open('','fehler');
-      t.document.write(values);
-      t.document.close();
-      return;
-    }
-    alert('Dem Nutzer wurden erfolreich die Rechte an der Gruppe entzogen.');
-    xp.refreshUserGroupListHandler(values);
-  });
+  $.post('ajax/users.php', data)
+   .success(function (values, status, req) {
+     alert('Dem Nutzer wurden erfolreich die Rechte an der Gruppe entzogen.');
+     xp.refreshUserGroupListHandler(values);
+    })
+   .error(xp.ajaxErrorHandler);
   return false;
 }
 
@@ -639,43 +657,40 @@ xp.onSelectGroup = function() {
   }
 }
 
-xp.pads = {};
 xp.initSelection = function() {
   $('#section2').val(''); 
-  $.post('ajax/list.php', {}, function (values, status, req) {
-    if (typeof(values) != 'object') {
-      t = window.open('','fehler');
-      t.document.write(values);
-      t.document.close();
-      return;
-    }
-    xp.pads = values;
-    $('#section').empty();
-    $('#grplist3').empty();
-    $('#tpllist').empty();
-    $('<option/>', {value: '', text: 'leere Vorlage'}).appendTo($('#tpllist'));
+  $.post('ajax/list.php', {})
+   .success(function (values, status, req) {
+     xp.pads = values;
+     $('#section').empty();
+     $('#grplist3').empty();
+     $('#tpllist').empty();
+     $('<option/>', {value: '', text: 'leere Vorlage'}).appendTo($('#tpllist'));
 
-    for (var group in values) {
-      $( '#grplist3').append($('<option>', {value: group, text: group}));
-      if (values[group][''].length > 0) {
-        // group has templates
-        var grpObj = $('<optgroup/>', {label: group}).appendTo($('#tpllist'));
-        for (var pad in values[group]['']) {
-          $('<option/>', {value: pad, text: values[group][''][pad]['name']}).appendTo(grpObj);
-        }
-      }
-      if (Object.keys(values[group]).length > 1) {
-        // group has non-template sections
-        var grpObj = $('<optgroup/>', {label: group}).appendTo($('#section'));
-        for (var section in values[group]) {
-          if (section != '') {
-            $('<option/>', {value: JSON.stringify({'group':group, 'section':section}), text: section}).appendTo(grpObj);
-          }
-        }
-      }
-    }
-    xp.switchPlanListToSection(null);
-  });
+     for (var group in values) {
+       $( '#grplist3').append($('<option>', {value: group, text: group}));
+       if (Object.keys(values[group]['']).length > 0) {
+         // group has templates
+         $( '#grplist4').append($('<option>', {value: group, text: group}));
+         var grpObj = $('<optgroup/>', {label: group}).appendTo($('#tpllist'));
+         for (var pad in values[group]['']) {
+           $('<option/>', {value: pad, text: values[group][''][pad]['name']}).appendTo(grpObj);
+         }
+       }
+       if (Object.keys(values[group]).length > 1) {
+         // group has non-template sections
+         var grpObj = $('<optgroup/>', {label: group}).appendTo($('#section'));
+         for (var section in values[group]) {
+           if (section != '') {
+             $('<option/>', {value: JSON.stringify({'group':group, 'section':section}), text: section}).appendTo(grpObj);
+           }
+         }
+       }
+     }
+     xp.switchPlanListToSection(null);
+     xp.switchTplListToSection(null);
+    })
+   .error(xp.ajaxErrorHandler);
 }
 
 xp.onCreatePlan = function(event) {
@@ -693,38 +708,86 @@ xp.onCreatePlan = function(event) {
     }
   }
 
-  $.post('ajax/planmanage.php', data, function (values, status, req) {
-    if (typeof(values) != 'object') {
-      t = window.open('','fehler');
-      t.document.write(values);
-      t.document.close();
-      return;
-    }
-    xp.initSelection();
-    xp.data[data.group][data.section][values.id]=values.data;
-    xp.switchToPlan({'data': {'group': data.group, 'section': data.section, 'id': values.id}});
-  });
+  $.post('ajax/planmanage.php', data)
+   .success(function (values, status, req) {
+     xp.initSelection();
+     if (!xp.pads[values.meta.group_id]) { xp.pads[values.meta.group_id] = {};}
+     if (!xp.pads[values.meta.group_id][values.meta.section_id]) { xp.pads[values.meta.group_id][values.meta.section_id] = {};}
+     xp.pads[values.meta.group_id][values.meta.section_id][values.id]=values.meta;
+     xp.adminMode = true;
+     xp.switchToPlan({'group': values.meta.group_id, 'section': values.meta.section_id, 'id': values.id});
+    })
+   .error(xp.ajaxErrorHandler);
   return false;
 }
 
-xp.currentPlanId = null;
-xp.switchToPlan = function(event) {
-  xp.currentPlanId = event.data;
-  var planId = event.data.id;
-  var group = event.data.group;
-  var section = event.data.section;
+xp.onClickPlan = function(event) {
+  if (event.data.section == '') {
+    if (!confirm('Wollen Sie wirklich die Vorlage bearbeiten?')) {
+      return false;
+    }
+    xp.adminMode = true;
+  } else {
+    xp.adminMode = false;
+  }
+  xp.switchToPlan(event.data);
+  return false;
+}
+
+xp.switchToPlan = function(data) {
+  var planId = data.id;
+  var group = data.group;
+  var section = data.section;
+  var plan = xp.pads[group][section][planId];
+  xp.currentPlanId = data;
+
+  $.post('ajax/plan.php', {'id': planId, 'action':'listPlanData'})
+   .success(function (values, status, req) {
+     xp.data = values.data;
+     xp.ass = values.assistant;
+     xp.configureUserToolbar();
+     xp.configureAdminToolbar();
+     $("#tabs").tabs("select", "#plan");
+    })
+   .error(xp.ajaxErrorHandler);
+}
+
+xp.configureUserToolbar = function() {
+  var data = xp.currentPlanId;
+  var planId = data.id;
+  var group = data.group;
+  var section = data.section;
+  var plan = xp.pads[group][section][planId];
+  $('#usertoolbar').show();
+  $('#usertoolbar_name').text(plan.name);
+  $('#usertoolbar_from').text(plan.eventStart);
+  $('#usertoolbar_to').text(plan.eventEnd);
+  $("#toadmin").attr('checked', xp.adminMode);
+  $("#toadmin").button("refresh");
+}
+xp.configureAdminToolbar = function() {
+  var data = xp.currentPlanId;
+  var planId = data.id;
+  var group = data.group;
+  var section = data.section;
   var plan = xp.pads[group][section][planId];
 
-  $.post('ajax/plan.php', {'id': planId, 'action':'listPlanData'}, function (values, status, req) {
-    if (typeof(values) != 'object') {
-      t = window.open('','fehler');
-      t.document.write(values);
-      t.document.close();
-      return;
-    }
-    xp.data = values;
-    $("#tabs").tabs("select", "#plan");
-  });
+  $('#admintoolbar_group_id').text(plan.group_id);
+  $('#admintoolbar_section_id').val(plan.section_id);
+  $('#admintoolbar_id').text(plan.id);
+  $('#admintoolbar_name').val(plan.name);
+  $('#admintoolbar_comment').val(plan.comment);
+  $('#admintoolbar_eventStart').val(plan.eventStart);
+  $('#admintoolbar_eventEnd').val(plan.eventEnd);
+  $('#admintoolbar_editStart').val(plan.editStart);
+  $('#admintoolbar_editEnd').val(plan.editEnd);
+  $('#admintoolbar_creator').text(plan.creator);
+  if (plan.editPassword == 1) {
+    $('#admintoolbar_editPassword').val('**gesetzt**');
+  }
+  if (plan.adminPassword == 1) {
+    $('#admintoolbar_adminPassword').val('**gesetzt**');
+  }
 }
 
 xp.switchPlanListToSection = function(event) {
@@ -739,12 +802,114 @@ xp.switchPlanListToSection = function(event) {
   $('#ulplanlist').empty();
   for (var k in xp.pads[section.group][section.section]) {
     var plan = xp.pads[section.group][section.section][k];
-    $('<li/>', {text: plan["name"]}).appendTo($('#ulplanlist')).click({'group': section.group, 'section': section.section, 'id':plan.id}, xp.switchToPlan);
+    $('<li/>', {text: plan["name"]}).appendTo($('#ulplanlist')).click({'group': section.group, 'section': section.section, 'id':plan.id}, xp.onClickPlan);
+  }
+}
+
+xp.onChangeAdminMode = function(event) {
+  xp.adminMode = $(this).prop('checked');
+  xp.initTable();
+}
+
+xp.onDeletePlan = function(event) {
+  event.stopPropagation();
+  var data = xp.currentPlanId;
+  var planId = data.id;
+  var group = data.group;
+  var section = data.section;
+  var plan = xp.pads[group][section][planId];
+  if (confirm ('Soll der Plan '+group+'/'+section+'/'+planId+' '+plan.name+' wirklich entfernt werden?')) {
+    $.post('ajax/planmanage.php', {'action':'deletePlan', 'id': planId})
+     .success(function (values, textStatus, jqXHR) {
+      $("#tabs").tabs("select", "#planlist");
+    })
+    .error(xp.ajaxErrorHandler);
+  }
+  return false;
+}
+
+xp.ajaxErrorHandler = function (jqXHR, textStatus, errorThrown) {
+      t = window.open('','fehler');
+      t.document.writeln(jqXHR);
+      t.document.writeln(textStatus);
+      t.document.writeln(errorThrown);
+      t.document.close();
+};
+
+xp.onSavePlan = function(event) {
+  event.stopPropagation();
+
+  var data = {};
+  data.section_id = $('#admintoolbar_section_id').val();
+  data.id = xp.currentPlanId.id;
+  data.name = $('#admintoolbar_name').val();
+  data.comment = $('#admintoolbar_comment').val();
+  data.eventStart = $('#admintoolbar_eventStart').val();
+  data.eventEnd = $('#admintoolbar_eventEnd').val();
+  data.editStart = $('#admintoolbar_editStart').val();
+  data.editEnd = $('#admintoolbar_editEnd').val();
+  data.editPassword = $('#admintoolbar_editPassword').val();
+  data.adminPassword = $('#admintoolbar_adminPassword').val();
+
+  if (data.editPassword == '' || data.editPassword == '**gesetzt**') {
+    delete data.editPassword;
+  }
+  if (data.adminPassword == '' || data.adminPassword == '**gesetzt**') {
+    delete data.adminPassword;
+  }
+  data.action = 'savePlan';
+
+  $.post('ajax/planmanage.php', data)
+   .success(function (values, textStatus, jqXHR) {
+    alert('Meta-Daten wurden gespeichert.');
+  })
+  .error(xp.ajaxErrorHandler);
+
+  return false;
+}
+
+xp.onNewTemplate = function(event) {
+  event.stopPropagation();
+
+  var planId = xp.currentPlanId.id;
+  var group = xp.currentPlanId.group;
+  var section = xp.currentPlanId.section;
+  var plan = xp.pads[group][section][planId];
+
+  var data = {};
+  data.id = planId;
+  data.group = group;
+  data.name = plan.name;
+  data.action = 'createTemplate';
+
+  $.post('ajax/planmanage.php', data)
+   .success(function (values, textStatus, jqXHR) {
+    alert('Eine Vorlage wurde gespeichert.');
+  })
+  .error(xp.ajaxErrorHandler);
+
+  return false;
+}
+
+xp.switchTplListToSection = function(event) {
+  if (event != null) {
+    event.stopPropagation();
+  }
+  var group = $('#grplist4').val();
+  if (group == '') {
+    return;
+  }
+  $('#ulplanlist2').empty();
+  for (var k in xp.pads[group]['']) {
+    var plan = xp.pads[group][''][k];
+    $('<li/>', {text: plan["name"]}).appendTo($('#ulplanlist2')).click({'group': group, 'section': '', 'id':plan.id}, xp.onClickPlan);
   }
 }
 
 xp.init = function() {
   $('#toolbar').hide();
+  $('#admintoolbar').hide();
+  $('#usertoolbar').hide();
   $('#tabs').tabs({show: xp.onTabChange});
   $( "#save" ).button({
             text: false,
@@ -766,6 +931,15 @@ xp.init = function() {
   $( "#grplist" ).change(xp.onSelectGroup);
   $( "#plan_create" ).click(xp.onCreatePlan);
   $( "#section" ).change(xp.switchPlanListToSection);
+  $( "#grplist4" ).change(xp.switchTplListToSection);
+  $( "#toadmin" ).button().change(xp.onChangeAdminMode);
+  $('#admintoolbar_eventStart').datetimepicker({'dateFormat': 'yy-mm-dd', 'timeFormat': 'hh:mm:ss'});
+  $('#admintoolbar_eventEnd').datetimepicker({'dateFormat': 'yy-mm-dd', 'timeFormat': 'hh:mm:ss'});
+  $('#admintoolbar_editStart').datetimepicker({'dateFormat': 'yy-mm-dd', 'timeFormat': 'hh:mm:ss'});
+  $('#admintoolbar_editEnd').datetimepicker({'dateFormat': 'yy-mm-dd', 'timeFormat': 'hh:mm:ss'});
+  $( "#deleteplan" ).button().click(xp.onDeletePlan);
+  $( "#saveplan" ).button().click(xp.onSavePlan);
+  $( "#totemplate" ).button().click(xp.onNewTemplate);
 }
 
 if (!Object.keys) {

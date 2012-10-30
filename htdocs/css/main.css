@@ -14,5 +14,7 @@ input.xpCell { border: thin solid blue; }
 .normalFontsize { font-size: medium; }
 .bigFontsize { font-size: x-large; }
 div.tab { position: relative; }
-#usermgnt label, #usrgrplist, #grplist2, #planlist label { display: inline-block; min-width: 150px; }
-#ulplanlist li { cursor: pointer; }
+#admintoolbar label, #usermgnt label, #usrgrplist, #grplist2, #planlist label { display: inline-block; min-width: 250px; vertical-align: top; }
+#ulplanlist li, #ulplanlist2 li { cursor: pointer; }
+#admintoolbar, #usertoolbar { display: block; }
+#admintoolbar fieldset { background-color: #CCCCCC; }
