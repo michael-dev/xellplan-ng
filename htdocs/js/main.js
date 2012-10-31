@@ -20,6 +20,7 @@ xp.pads = {};
 xp.adminMode = false;
 xp.currentPlanId = null;
 xp.firstRun = true;
+xp.log = {};
 
 jQuery.extend({
   parseQuerystring: function(){
@@ -520,6 +521,24 @@ xp.addCells = function(numCol, numRow) {
   xp.resizeTable();
 }
 
+xp.initLog = function() {
+  var data = xp.currentPlanId;
+  var planId = data.id;
+  var group = data.group;
+  var section = data.section;
+  var plan = xp.pads[group][section][planId];
+  $('#logtoolbar_name').text(plan.name);
+  $('#dplanlog').empty();
+  for (var k in xp.log) {
+    var log = xp.log[k];
+    var tr = $('<tr/>').appendTo($('#dplanlog'));
+    $('<td/>').appendTo(tr).text(log.eventTime);
+    var cell = xp.colName(parseInt(log.col))+log.row;
+    $('<td/>').appendTo(tr).text(cell);
+    $('<td/>').appendTo(tr).text(log.text);
+  }
+}
+
 xp.initTable = function() {
   // save size
   var numCol = xp.numCol;
@@ -663,8 +682,10 @@ xp.onTabChange = function(event, ui) {
       xp.initSelection();
      break;
     case "plan":
-    case "planlog":
      xp.initTable();
+     break;
+    case "planlog":
+     xp.initLog();
      break;
     case "usermgnt":
      xp.refreshUserGroupList();
@@ -979,6 +1000,7 @@ xp.switchToPlan = function(data) {
      xp.ass = values.assistant;
      xp.colWidths = values.colWidths;
      xp.rowHeights = values.rowHeights;
+     xp.log = values.log;
      var size = xp.getDataSize();
      xp.numCol = size[0];
      xp.numRow = size[1];
@@ -997,7 +1019,6 @@ xp.configureUserToolbar = function() {
   var plan = xp.pads[group][section][planId];
   $('#usertoolbar').show();
   $('#usertoolbar_name').text(plan.name);
-  $('#logtoolbar_name').text(plan.name);
   $('#usertoolbar_from').text(plan.eventStart);
   $('#usertoolbar_to').text(plan.eventEnd);
   $('#usertoolbar_comment').text(plan.comment);

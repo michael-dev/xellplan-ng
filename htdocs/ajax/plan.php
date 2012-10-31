@@ -34,10 +34,14 @@ switch ($_REQUEST["action"]):
       $result["rowHeights"][$row["idx"]] = $row["width"];
     }
   }
+  $padAssStmt = $pdo->prepare("SELECT eventTime, row, col, text FROM ${DB_PREFIX}pad_log WHERE pad_id = ?") or httperror($pdo->errorInfo());
+  $padAssStmt->execute(Array($_REQUEST["id"])) or httperror($padAssStmt->errorInfo());
+  $result["log"]  = $padAssStmt->fetchAll(PDO::FETCH_ASSOC);
   if (count($result["data"]) == 0) { $result["data"] = new stdClass(); }
   if (count($result["assistant"]) == 0) { $result["assistant"] = new stdClass(); }
   if (count($result["colWidths"]) == 0) { $result["colWidths"] = new stdClass(); }
   if (count($result["rowHeights"]) == 0) { $result["rowHeights"] = new stdClass(); }
+  if (count($result["log"]) == 0) { $result["log"] = new stdClass(); }
  break;
  case "setCell":
    $planId = $_REQUEST["id"];
@@ -62,6 +66,8 @@ switch ($_REQUEST["action"]):
    if (empty($_REQUEST["name"])) {
      $padAssStmt = $pdo->prepare("DELETE FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ? AND row = ? AND col = ?") or httperror($pdo->errorInfo());
      $padAssStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"])) or httperror($padAssStmt->errorInfo());
+     $padAssStmt = $pdo->prepare("INSERT INTO ${DB_PREFIX}pad_log (pad_id, row, col, text) VALUES ( ?, ?, ?, ?)") or httperror($pdo->errorInfo());
+     $padAssStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"], '')) or httperror($padAssStmt->errorInfo());
    } else {
      $padAssStmt = $pdo->prepare("SELECT COUNT(*) AS ctn FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ? AND row = ? AND col = ?") or httperror($pdo->errorInfo());
      $padAssStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"])) or httperror($padAssStmt->errorInfo());
@@ -75,6 +81,8 @@ switch ($_REQUEST["action"]):
        $padAssStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_assistant SET $key = ? WHERE pad_id = ? AND row = ? AND col = ?") or httperror($pdo->errorInfo());
        $padAssStmt->execute(Array($_REQUEST[$key], $_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"])) or httperror($padAssStmt->errorInfo());
      }
+     $padAssStmt = $pdo->prepare("INSERT INTO ${DB_PREFIX}pad_log (pad_id, row, col, text) VALUES ( ?, ?, ?, ?)") or httperror($pdo->errorInfo());
+     $padAssStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"], $_REQUEST["name"])) or httperror($padAssStmt->errorInfo());
    }
    $padAssStmt = $pdo->prepare("SELECT row, col, name, organization, email FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ? AND row = ? AND col = ?") or httperror($pdo->errorInfo());
    $padAssStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
