@@ -47,11 +47,11 @@ switch ($_REQUEST["action"]):
    $planId = $_REQUEST["id"];
    $pads = $pdo->prepare("SELECT editPassword, ( (editEnd > NOW()) AND (editStart < NOW()) ) AS userEditable FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
    $pads->execute(Array($planId)) or httperror($pads->errorInfo());
-   $rows = $pads->fetch(PDO::FETCH_ASSOC);
-   if ($rows["userEditable"] == 0) {
+   $row = $pads->fetch(PDO::FETCH_ASSOC);
+   if ($row["userEditable"] == 0) {
      httperror("Dieser Plan ist nicht editierbar.");
    }
-   if ($rows["editPassword"] === null) {
+   if ($row["editPassword"] === null) {
      if (empty($_REQUEST["captchaId"])) { httperror("empty captcha id supplied"); }
      if (Securimage::checkByCaptchaId($_REQUEST["captchaId"], $_REQUEST["captcha"]) != true) {
        httperror("Captcha war falsch.");
@@ -60,7 +60,7 @@ switch ($_REQUEST["action"]):
      $password = $_REQUEST["password"];
      $passwordHash = $row["editPassword"];
      if (!$pwObj->hashVerify($password, $passwordHash)) {
-       httperror("Passwort war falsch.");
+       httperror("Passwort war falsch");
      }
    }
    if (empty($_REQUEST["name"])) {

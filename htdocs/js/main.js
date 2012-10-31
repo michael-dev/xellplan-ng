@@ -388,8 +388,11 @@ xp.onSaveVariable = function (event) {
   if (var_name == '') {
     var_name = var_email;
   }
-  if (var_captcha == '') {
+  if (var_captcha == '' && plan.editPassword == 0) {
     alert('Bitte Captcha eingeben!');
+    return false;
+  } else if (var_password == '') {
+    alert('Bitte Passwort eingeben!');
     return false;
   }
   var data = {};
