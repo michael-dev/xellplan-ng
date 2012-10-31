@@ -274,7 +274,7 @@ xp.cellAddClass = function(col, row, propClass) {
   $('#'+cellId).addClass(propClass);
   if (!xp.data[row]) {  xp.data[row] = {}; }
   if (!xp.data[row][col]) { xp.data[row][col] = {}; }
-  if (!Object.prototype.hasOwnProperty.call(xp.data[row][col], 'classes')) { xp.data[row][col]['classes'] = []; }
+  if (!Object.prototype.hasOwnProperty.call(xp.data[row][col], 'classes')) { xp.data[row][col]['classes'] = ['fontsize1']; }
   if (propClass == 'variable') {
     xp.data[row][col]['userEditField'] = 1;
     xp.configureUserToolbar();
