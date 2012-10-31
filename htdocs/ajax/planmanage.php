@@ -81,10 +81,11 @@ switch ($_REQUEST["action"]):
      $padDataStmt = $pdo->prepare("INSERT INTO ${DB_PREFIX}pad_data (pad_id, row, col) VALUES (?, ?, ?)") or httperror($pdo->errorInfo());
      $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
    }
-   if (isset($_REQUEST["text"])) {
-     $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_data SET text = ? WHERE pad_id = ? AND row = ? AND col = ?") or httperror($pdo->errorInfo());
-     $padDataStmt->execute(Array($_REQUEST["text"], $_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
+   if (!isset($_REQUEST["text"])) {
+     $_REQUEST["text"] = null;
    }
+   $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_data SET text = ? WHERE pad_id = ? AND row = ? AND col = ?") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["text"], $_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
    if (isset($_REQUEST["editable"])) {
      $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_data SET userEditField = ? WHERE pad_id = ? AND row = ? AND col = ?") or httperror($pdo->errorInfo());
      $padDataStmt->execute(Array($_REQUEST["editable"], $_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
