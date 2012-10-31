@@ -309,7 +309,7 @@ xp.onCellFocus = function(event) {
 
 xp.configureToolbar = function(col,row) {
   var classes = xp.getCellClasses(col, row);
-  $('#toolbar').show();
+  $('#toolbar').css('visibility','visible');
   $( "#bold" ).attr('checked', $.inArray('bold', classes) != -1);
   $( "#italics" ).attr('checked', $.inArray('italics', classes) != -1);
   $( "#underline" ).attr('checked', $.inArray('underline', classes) != -1);
@@ -449,7 +449,7 @@ xp.onCellKey = function(event) {
 xp.onCellConfirm = function(event) {
   var text = xp.destroyCell(event.data.col, event.data.row, true);
   xp.currentFocus = null;
-  $('#toolbar').hide();
+  $('#toolbar').css('visibility','hidden');
   if (event.data.confirm) {
     xp.updateCell(event.data.col, event.data.row, text, false);
     xp.saveCell(event.data.col, event.data.row);
@@ -550,8 +550,11 @@ xp.initTable = function() {
   // init toolbar
   if (xp.adminMode) {
     $('#admintoolbar').show();
+    $('#toolbar').show();
+    $('#toolbar').css('visibility','hidden');
   } else {
     $('#admintoolbar').hide();
+    $('#toolbar').hide();
   }
   // add -1,-1 header field
   xp.clearTable();
@@ -1146,8 +1149,12 @@ xp.switchPlanListToSection = function(event) {
 }
 
 xp.onChangeAdminMode = function(event) {
-  $('#toolbar').hide();
   xp.adminMode = $(this).prop('checked');
+  if (xp.adminMode) {
+    $('#toolbar').hide();
+  } else {
+    $('#toolbar').show();
+  }
   xp.initTable();
 }
 
