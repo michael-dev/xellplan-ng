@@ -173,7 +173,7 @@ function requirePadAdmin($padId) {
     $padStmt = $pdo->prepare("SELECT adminPassword FROM ${DB_PREFIX}pads WHERE id = ? AND (adminPassword IS NOT NULL)") or die(print_r($pdo->errorInfo(),true));
     $padStmt->execute(Array($padId)) or die(print_r($userStmt->errorInfo(),true));
     $res = $padStmt->fetchAll(PDO::FETCH_ASSOC);
-    if (is_array($res) && count($res) == 1) {
+    if (is_array($res) && count($res) == 1 && !empty($res[0]["adminPassword"])) {
       $passwordHash = $res[0]["adminPassword"];
       $password = $_SERVER['PHP_AUTH_PW'];
       if (!$pwObj->hashVerify($password, $passwordHash)) {
@@ -184,7 +184,7 @@ function requirePadAdmin($padId) {
     }
   }
 
-  if (isset($_SERVER['PHP_AUTH_PW'])) {
+  if (!isset($_SERVER['PHP_AUTH_PW'])) {
       header('WWW-Authenticate: Basic realm="XellPlan-NG Plan-Administrator "'.$planId);
       header('HTTP/1.0 401 Unauthorized');
       echo 'Admin-Rechte für Pad '.htmlspecialchars($padId).' benötigt.';
