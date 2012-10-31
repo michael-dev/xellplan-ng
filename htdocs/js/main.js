@@ -975,6 +975,7 @@ xp.onCreatePlan = function(event) {
 }
 
 xp.onClickPlan = function(event) {
+  event.stopPropagation();
   if (event.data.section == '') {
     if (!confirm('Wollen Sie wirklich die Vorlage bearbeiten?')) {
       return false;
@@ -1112,10 +1113,26 @@ xp.switchPlanListToSection = function(event) {
     return false;
   }
   section = JSON.parse( section );
-  $('#ulplanlist').empty();
+  $('#dplanlist').empty();
   for (var k in xp.pads[section.group][section.section]) {
     var plan = xp.pads[section.group][section.section][k];
-    $('<li/>', {text: plan["name"]}).appendTo($('#ulplanlist')).click({'group': section.group, 'section': section.section, 'id':plan.id}, xp.onClickPlan);
+    var tr = $('<li/>').appendTo($('#dplanlist'));
+    tr.click({'group': section.group, 'section': section.section, 'id':plan.id}, xp.onClickPlan);
+    $('<div/>').appendTo(tr).text(plan.name);
+    $('<div/>').appendTo(tr).text(plan.eventStart);
+    $('<div/>').appendTo(tr).text(plan.eventEnd);
+    $('<div/>').appendTo(tr).text(plan.editStart);
+    $('<div/>').appendTo(tr).text(plan.editEnd);
+    var contact = plan.contact;
+    if (contact == '' || !contact) {
+      contact = plan.creator;
+    }
+    $('<a/>').appendTo($('<div/>').appendTo(tr)).text(contact).attr('href','mailto:'+contact).click(false);
+    if (plan.editPassword == 1) {
+      $('<div/>').appendTo(tr).text('ERFORDERLICH');
+    } else {
+      $('<div/>').appendTo(tr).text('OHNE');
+    }
   }
 }
 
