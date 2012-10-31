@@ -673,15 +673,17 @@ xp.getCellData = function(col, row, edit) {
   } else if (col == -1) {
     return row+'.';
   }
+  var ret = '';
   if ((!edit)
       && xp.isUserEditField(col, row)
       && xp.ass[row] && xp.ass[row][col]) {
-    return xp.ass[row][col]['name'];
+    ret = xp.ass[row][col]['name'];
   }
   if (xp.data[row] && xp.data[row][col] && Object.prototype.hasOwnProperty.call(xp.data[row][col], 'text')) {
-    return xp.data[row][col]['text'];
+    ret = xp.data[row][col]['text'];
   }
-  return '';
+  if (ret == null) { ret = ''; }
+  return ret;
 }
 
 xp.getCellClasses = function(col, row) {
