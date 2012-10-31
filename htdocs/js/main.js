@@ -22,6 +22,16 @@ xp.currentPlanId = null;
 xp.firstRun = true;
 xp.log = {};
 
+if (! Array.prototype.clone ) {
+  Array.prototype.clone = function() {
+    var arr1 = new Array();
+    for (var property in this) {
+        arr1[property] = typeof(this[property]) == 'object' ? this[property].clone() : this[property]
+    }
+    return arr1;
+  }
+}
+
 jQuery.extend({
   parseQuerystring: function(){
     var nvpair = {};
@@ -131,7 +141,6 @@ xp.addCell = function(col, row, editable) {
   var data = {'col':col, 'row':row};
   var text = xp.getCellData(col, row, (editable > 0));
   var classes = xp.getCellClasses(col, row);
-
   // construct cell
   var cell;
   if (edit) {
@@ -678,7 +687,7 @@ xp.getCellData = function(col, row, edit) {
 xp.getCellClasses = function(col, row) {
   var cls = ['fontsize1'];
   if (xp.data[row] && xp.data[row][col] && Object.prototype.hasOwnProperty.call(xp.data[row][col], 'classes')) {
-    cls = xp.data[row][col]['classes'];
+    cls = xp.data[row][col]['classes'].clone();
   }
   if (xp.isUserEditField(col, row)) {
     cls.push('variable');
