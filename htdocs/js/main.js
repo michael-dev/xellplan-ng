@@ -1118,6 +1118,11 @@ xp.switchPlanListToSection = function(event) {
     var plan = xp.pads[section.group][section.section][k];
     var tr = $('<li/>').appendTo($('#dplanlist'));
     tr.click({'group': section.group, 'section': section.section, 'id':plan.id}, xp.onClickPlan);
+    if (plan.userEditable == 1) {
+      tr.addClass('editablePlan');
+    } else {
+      tr.addClass('ineditablePlan');
+    }
     $('<div/>').appendTo(tr).text(plan.name);
     $('<div/>').appendTo(tr).text(plan.eventStart);
     $('<div/>').appendTo(tr).text(plan.eventEnd);

@@ -33,3 +33,6 @@ div.tab { position: relative; }
 #ulplanlog li.header div, #ulplanlist li.header div { background-color: #eee; font-weight: bold; cursor: default; }
 #ulplanlog li div, #ulplanlist li div { padding: 3px 5px; }
 #dplanlog, #dplanlist { display: table-row-group; }
+.editablePlan { }
+.ineditablePlan { background-color: #E0E0E0; }
+
