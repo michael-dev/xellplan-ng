@@ -706,9 +706,19 @@ xp.onTabChange = function(event, ui) {
       xp.initSelection();
      break;
     case "plan":
+     if (xp.currentPlanId == null) {
+       alert("Es wurde kein Plan ausgewählt.");
+       $("#tabs").tabs("select", "#planlist");
+       return false;
+     }
      xp.initTable();
      break;
     case "planlog":
+     if (xp.currentPlanId == null) {
+       alert("Es wurde kein Plan ausgewählt.");
+       $("#tabs").tabs("select", "#planlist");
+       return false;
+     }
      xp.initLog();
      break;
     case "usermgnt":
