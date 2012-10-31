@@ -531,11 +531,11 @@ xp.initLog = function() {
   $('#dplanlog').empty();
   for (var k in xp.log) {
     var log = xp.log[k];
-    var tr = $('<tr/>').appendTo($('#dplanlog'));
-    $('<td/>').appendTo(tr).text(log.eventTime);
+    var tr = $('<li/>').appendTo($('#dplanlog'));
+    $('<div/>').appendTo(tr).text(log.eventTime);
     var cell = xp.colName(parseInt(log.col))+log.row;
-    $('<td/>').appendTo(tr).text(cell);
-    $('<td/>').appendTo(tr).text(log.text);
+    $('<div/>').appendTo(tr).text(cell);
+    $('<div/>').appendTo(tr).text(log.text);
   }
 }
 

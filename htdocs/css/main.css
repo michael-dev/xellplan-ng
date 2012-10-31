@@ -27,4 +27,9 @@ div.tab { position: relative; }
 #postcaptcha { clear:left; }
 #footer_editableFree_ind.missingEditable { color: red; }
 #footer_editableFree_ind.noMissingEditable { color: green; }
-
+#ulplanlog { list-style: none; margin: 2; padding: 0; display: table; border-collapse: collapse; }
+#ulplanlog li { display: table-row; }
+#ulplanlog li div { display: table-cell; border: 1px solid #ccc; }
+#ulplanlog li.header div { background-color: #eee; font-weight: bold; cursor: default; }
+#ulplanlog li div { padding: 3px 5px; }
+#dplanlog { display: table-row-group; }
