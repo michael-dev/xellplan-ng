@@ -443,6 +443,7 @@ xp.onCellKey = function(event) {
   }
   event.data.confirm = (event.which == 13);
   xp.onCellConfirm(event);
+  return false;
 }
 
 xp.onCellConfirm = function(event) {
@@ -454,6 +455,7 @@ xp.onCellConfirm = function(event) {
     xp.saveCell(event.data.col, event.data.row);
   }
   event.stopPropagation();
+  return false;
 }
 
 xp.updateCell = function(col, row, text, edit) {
