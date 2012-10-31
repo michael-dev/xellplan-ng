@@ -919,6 +919,7 @@ xp.initSelection = function() {
      xp.pads = values;
      $('#section').empty();
      $('#grplist3').empty();
+     $('#grplist4').empty();
      $('#tpllist').empty();
      $('<option/>', {value: '', text: 'leere Vorlage'}).appendTo($('#tpllist'));
      var qs = jQuery.parseQuerystring();
