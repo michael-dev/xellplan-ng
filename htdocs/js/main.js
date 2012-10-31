@@ -523,10 +523,12 @@ xp.addCells = function(numCol, numRow) {
 
 xp.initLog = function() {
   var data = xp.currentPlanId;
+  if (data == null) { return; }
   var planId = data.id;
   var group = data.group;
   var section = data.section;
   var plan = xp.pads[group][section][planId];
+  if (plan == null || !plan) { return; }
   $('#logtoolbar_name').text(plan.name);
   $('#dplanlog').empty();
   for (var k in xp.log) {
