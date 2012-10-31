@@ -17,6 +17,7 @@
     <ul>
       <li><a href="#planlist">Auswahl</a></li>
       <li><a href="#plan">Plan</a></li>
+      <li><a href="#planlog">Plan-Log</a></li>
       <li><a href="#usermgnt">Nutzerverwaltung</a></li>
     </ul>
     <div id="planlist" class="tab">
@@ -91,6 +92,37 @@
      </form>
      <div id="content">
      </div>
+     <div id="footer">
+       <div>Eintragen von <span id="footer_editStart"></span> bis <span id="footer_editEnd"></span></div>
+       <div>Dienste (gesamt): <span id="footer_editableTotal"></span>, davon eingetragen: <span id="footer_editableCompleted"></span></div>
+       <div id="footer_editableFree_ind">Es fehlen noch <span id="footer_editableFree"></span> Dienste!</div>
+       <div>Bei Fragen <a href="" id="footer_contact"></a> kontaktieren!</div>
+       <div>Direkter Link auf diesen Plan: <a href="" id="footer_link"></a></div>
+     </div>
+     <div id="userdialog" title="Dienst übernehmen">
+        <div><label for="name">Name:</label> <input id="var_name" name="name" type="text"/></div>
+        <div>
+	  <label for="organization">Organisation:</label>
+	  <input id="var_organization" name="organization" type="text"/>
+	  <button onClick="$('#var_organization').val('StuRa');">StuRa</button>
+	  <button onClick="$('#var_organization').val('FSR EI');">FSR EI</button>
+	  <button onClick="$('#var_organization').val('FSR IA');">FSR IA</button>
+	  <button onClick="$('#var_organization').val('FSR MB');">FSR MB</button>
+	  <button onClick="$('#var_organization').val('FSR MN');">FSR MN</button>
+	  <button onClick="$('#var_organization').val('FSR WW');">FSR WW</button>
+	</div>
+        <div><label for="mail">e-Mail:</label> <input id="var_mail" name="mail" type="text"/></div>
+        <div class="var_password"><label for="password">Passwort:</label> <input id="var_password" name="password" type="Passwort"/></div>
+        <div class="var_captcha"><img id="captcha">Captcha: <input id="var_captcha" name="captcha" type="text"/><br/> <a href="#" id="refreshcaptcha">Bild wechseln</a></div>
+        <div id="postcaptcha"><button id="var_save">Speichern</button> <button id="var_cancel">Abbrechen</button></div>
+     </div>
+    </div>
+    <div id="planlog" class="tab">
+      <span id="logtoolbar" class="ui-widget-header ui-corner-all">
+        <span id="logtoolbar_name"></span>
+      </span>
+      <ul id="ulplanlog">
+      </ul>
     </div>
     <div id="usermgnt" class="tab">
       <form action="#">

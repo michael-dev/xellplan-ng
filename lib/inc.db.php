@@ -29,6 +29,15 @@ if ($r === false) {
                                                   PRIMARY KEY (id) );") or die(print_r($pdo->errorInfo(),true));
 }
 
+$r = $pdo->query("SELECT COUNT(*) FROM ${DB_PREFIX}pad_width");
+if ($r === false) {
+  $pdo->query("CREATE TABLE ${DB_PREFIX}pad_width ( pad_id INT NOT NULL,
+                                                      type VARCHAR(128) NOT NULL,
+                                                       idx INT NOT NULL,
+                                                     width INT NOT NULL
+                                                  );") or die(print_r($pdo->errorInfo(),true));
+}
+
 $r = $pdo->query("SELECT COUNT(*) FROM ${DB_PREFIX}users");
 if ($r === false) {
   $pdo->query("CREATE TABLE ${DB_PREFIX}users (     email VARCHAR(128) NOT NULL,
@@ -86,7 +95,7 @@ function requireAdminAuth() {
   if (isset($_SERVER['PHP_AUTH_USER'])) {
     $userStmt = $pdo->prepare("SELECT password FROM ${DB_PREFIX}users WHERE admin AND email = ?") or die(print_r($pdo->errorInfo(),true));
     $userStmt->execute(Array($_SERVER['PHP_AUTH_USER'])) or die(print_r($userStmt->errorInfo(),true));
-    $res = $userStmt->fetchAll();
+    $res = $userStmt->fetchAll(PDO::FETCH_ASSOC);
     if (is_array($res) && count($res) == 1) {
       $passwordHash = $res[0]["password"];
       $password = $_SERVER['PHP_AUTH_PW'];
@@ -118,7 +127,7 @@ function requireGroupAdmin($groupId) {
 					WHERE group_id = ? )
 			      ") or die(print_r($pdo->errorInfo(),true));
     $userStmt->execute(Array($_SERVER['PHP_AUTH_USER'], $groupId)) or die(print_r($userStmt->errorInfo(),true));
-    $res = $userStmt->fetchAll();
+    $res = $userStmt->fetchAll(PDO::FETCH_ASSOC);
     if (is_array($res) && count($res) == 1) {
       $passwordHash = $res[0]["password"];
       $password = $_SERVER['PHP_AUTH_PW'];
@@ -149,7 +158,7 @@ function requirePadAdmin($padId) {
 					WHERE p.id = ? )
 			      ") or die(print_r($pdo->errorInfo(),true));
     $userStmt->execute(Array($_SERVER['PHP_AUTH_USER'], $padId)) or die(print_r($userStmt->errorInfo(),true));
-    $res = $userStmt->fetchAll();
+    $res = $userStmt->fetchAll(PDO::FETCH_ASSOC);
     if (is_array($res) && count($res) == 1) {
       $passwordHash = $res[0]["password"];
       $password = $_SERVER['PHP_AUTH_PW'];
@@ -163,7 +172,7 @@ function requirePadAdmin($padId) {
   if (isset($_SERVER['PHP_AUTH_PW']) && !isset($_SERVER['PHP_AUTH_USER'])) {
     $padStmt = $pdo->prepare("SELECT adminPassword FROM ${DB_PREFIX}pads WHERE id = ? AND (adminPassword IS NOT NULL)") or die(print_r($pdo->errorInfo(),true));
     $padStmt->execute(Array($padId)) or die(print_r($userStmt->errorInfo(),true));
-    $res = $padStmt->fetchAll();
+    $res = $padStmt->fetchAll(PDO::FETCH_ASSOC);
     if (is_array($res) && count($res) == 1) {
       $passwordHash = $res[0]["adminPassword"];
       $password = $_SERVER['PHP_AUTH_PW'];

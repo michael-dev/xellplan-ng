@@ -13,6 +13,8 @@ switch ($_REQUEST["action"]):
    if (!empty($_REQUEST["template"])) {
      $tmplPlanStmt = $pdo->prepare("INSERT INTO ${DB_PREFIX}pad_data (pad_id, row, col, text, classes, userEditField) SELECT ?, row, col, text, classes, userEditField FROM ${DB_PREFIX}pad_data WHERE pad_id = ?") or httperror($pdo->errorInfo());
      $tmplPlanStmt->execute(Array($planId, $_REQUEST["template"])) or httperror($tmplPlanStmt->errorInfo());
+     $tmplPlanStmt = $pdo->prepare("INSERT INTO ${DB_PREFIX}pad_width (pad_id, type, idx, width) SELECT ?, type, idx, width FROM ${DB_PREFIX}pad_width WHERE pad_id = ?") or httperror($pdo->errorInfo());
+     $tmplPlanStmt->execute(Array($planId, $_REQUEST["template"])) or httperror($tmplPlanStmt->errorInfo());
    }
    $result["id"] = $planId;
    $pads = $pdo->prepare("SELECT group_id, section_id, id, name, comment, eventStart, eventEnd, editStart, editEnd, creator, (editPassword IS NOT NULL) AS editPassword, (adminPassword IS NOT NULL) AS adminPassword, ( (editEnd > NOW()) AND (editStart < NOW()) ) AS userEditable FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
@@ -28,6 +30,8 @@ switch ($_REQUEST["action"]):
    $dropPlanStmt->execute(Array($_REQUEST["id"])) or httperror($dropPlanStmt->errorInfo());
    $dropPlanStmt = $pdo->prepare("DELETE FROM ${DB_PREFIX}pad_data WHERE pad_id = ?") or httperror($pdo->errorInfo());
    $dropPlanStmt->execute(Array($_REQUEST["id"])) or httperror($dropPlanStmt->errorInfo());
+   $dropPlanStmt = $pdo->prepare("DELETE FROM ${DB_PREFIX}pad_width WHERE pad_id = ?") or httperror($pdo->errorInfo());
+   $dropPlanStmt->execute(Array($_REQUEST["id"])) or httperror($dropPlanStmt->errorInfo());
    $dropPlanStmt = $pdo->prepare("DELETE FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
    $dropPlanStmt->execute(Array($_REQUEST["id"])) or httperror($dropPlanStmt->errorInfo());
  break;
@@ -37,6 +41,7 @@ switch ($_REQUEST["action"]):
      if (!isset($_REQUEST[$key])) { continue; }
      $value = $_REQUEST[$key];
      if (empty($value)) { $value = NULL; }
+     if ($key == "editPassword" || $key == "adminPassword") { $value = $pwObj->hashPassword($value); }
      $updPlanStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pads SET $key = ? WHERE id = ?") or httperror($pdo->errorInfo());
      $updPlanStmt->execute(Array($value, $_REQUEST["id"])) or httperror($updPlanStmt->errorInfo());
    }
@@ -51,13 +56,28 @@ switch ($_REQUEST["action"]):
    $planId = $pdo->lastInsertId();
    $tmplPlanStmt = $pdo->prepare("INSERT INTO ${DB_PREFIX}pad_data (pad_id, row, col, text, classes, userEditField) SELECT ?, row, col, text, classes, userEditField FROM ${DB_PREFIX}pad_data WHERE pad_id = ?") or httperror($pdo->errorInfo());
    $tmplPlanStmt->execute(Array($planId, $_REQUEST["id"])) or httperror($tmplPlanStmt->errorInfo());
+   $tmplPlanStmt = $pdo->prepare("INSERT INTO ${DB_PREFIX}pad_width (pad_id, type, idx, width) SELECT ?, type, idx, width FROM ${DB_PREFIX}pad_width WHERE pad_id = ?") or httperror($pdo->errorInfo());
+   $tmplPlanStmt->execute(Array($planId, $_REQUEST["id"])) or httperror($tmplPlanStmt->errorInfo());
+ break;
+ case "setWidth":
+   requirePadAdmin($_REQUEST["id"]);
+   $padDataStmt = $pdo->prepare("SELECT COUNT(*) AS ctn FROM ${DB_PREFIX}pad_width WHERE pad_id = ? AND type = ? AND idx = ?") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["type"], $_REQUEST["idx"])) or httperror($padDataStmt->errorInfo());
+   $rows = $padDataStmt->fetch(PDO::FETCH_ASSOC);
+   if ($rows["ctn"] == 0) {
+     $padDataStmt = $pdo->prepare("INSERT INTO ${DB_PREFIX}pad_width (pad_id, type, idx, width) VALUES (?, ?, ?, ?)") or httperror($pdo->errorInfo());
+     $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["type"], $_REQUEST["idx"], $_REQUEST["width"])) or httperror($padDataStmt->errorInfo());
+   } else {
+     $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_width SET width = ? WHERE pad_id = ? AND type = ? AND idx = ?") or httperror($pdo->errorInfo());
+     $padDataStmt->execute(Array($_REQUEST["width"], $_REQUEST["id"], $_REQUEST["type"], $_REQUEST["idx"])) or httperror($padDataStmt->errorInfo());
+   }
  break;
  case "setCell":
    requirePadAdmin($_REQUEST["id"]);
    $padDataStmt = $pdo->prepare("SELECT COUNT(*) AS ctn FROM ${DB_PREFIX}pad_data WHERE pad_id = ? AND row = ? AND col = ?") or httperror($pdo->errorInfo());
    $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
-   $rows = $padDataStmt->fetchAll();
-   if ($rows[0][0] == 0) {
+   $rows = $padDataStmt->fetch(PDO::FETCH_ASSOC);
+   if ($rows["ctn"] == 0) {
      $padDataStmt = $pdo->prepare("INSERT INTO ${DB_PREFIX}pad_data (pad_id, row, col) VALUES (?, ?, ?)") or httperror($pdo->errorInfo());
      $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
    }
