@@ -1,5 +1,5 @@
 #content { position: relative; }
-.xpCell { position: absolute !important; border: thin solid black; padding: 2px; overflow: visible; margin: 0px; }
+.xpCell { position: absolute !important; border: thin solid black; padding: 2px; overflow: visible; margin: 0px; background-color: white; }
 .xpCellHeader { background-color: lightgrey; text-align: center; }
 .xpCellNumber { background-color: lightgrey; text-align: right; }
 .xpCell.editable { cursor: text; }
