@@ -1125,6 +1125,9 @@ xp.switchPlanListToSection = function(event) {
     return false;
   }
   section = JSON.parse( section );
+  if (section == null) {
+    return;
+  }
   $('#dplanlist').empty();
   for (var k in xp.pads[section.group][section.section]) {
     var plan = xp.pads[section.group][section.section][k];
