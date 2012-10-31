@@ -300,6 +300,7 @@ xp.onCellFocus = function(event) {
   if (xp.currentFocus != null) {
     var cellId = xp.getCellId(xp.currentFocus.col, xp.currentFocus.row, true);
     $('#'+cellId).removeClass('hasFocus');
+    xp.onCellConfirmHandler(xp.currentFocus.col, xp.currentFocus.row, true);
   }
   xp.currentFocus = event.data;
   var cellId = xp.getCellId(event.data.col, event.data.row, true);
@@ -327,7 +328,7 @@ xp.configureToolbar = function(col,row) {
   $( "#variable" ).button("refresh");
   $( "#fontsize" ).buttonset("refresh");
   $( "#save" ).unbind('click');
-  $( "#save" ).click({'col': col, 'row':row, 'confirm': true}, xp.onCellConfirm);
+  $( "#save" ).click({'col': col, 'row':row}, xp.onCellConfirm);
 }
 
 xp.onCellClickForUser = function(event) {
@@ -441,21 +442,25 @@ xp.onCellKey = function(event) {
       event.which != 27) {
     return;
   }
-  event.data.confirm = (event.which == 13);
-  xp.onCellConfirm(event);
+  event.stopPropagation();
+  xp.onCellConfirmHandler(event.data.col, event.data.row, (event.which == 13));
   return false;
 }
 
 xp.onCellConfirm = function(event) {
-  var text = xp.destroyCell(event.data.col, event.data.row, true);
+  event.stopPropagation();
+  xp.onCellConfirmHandler(event.data.col, event.data.row, true);
+  return false;
+}
+
+xp.onCellConfirmHandler = function(col, row, cfrm) {
+  var text = xp.destroyCell(col, row, true);
   xp.currentFocus = null;
   $('#toolbar').css('visibility','hidden');
-  if (event.data.confirm) {
-    xp.updateCell(event.data.col, event.data.row, text, false);
-    xp.saveCell(event.data.col, event.data.row);
+  if (cfrm) {
+    xp.updateCell(col, row, text, false);
+    xp.saveCell(col, row);
   }
-  event.stopPropagation();
-  return false;
 }
 
 xp.updateCell = function(col, row, text, edit) {
@@ -1151,6 +1156,9 @@ xp.switchPlanListToSection = function(event) {
 xp.onChangeAdminMode = function(event) {
   xp.adminMode = $(this).prop('checked');
   if (xp.adminMode) {
+    if (xp.currentFocus != null) {
+      xp.onCellConfirmHandler(xp.currentFocus.col, xp.currentFocus.row, true);
+    }
     $('#toolbar').hide();
   } else {
     $('#toolbar').show();
