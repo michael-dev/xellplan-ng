@@ -394,15 +394,20 @@ xp.onSaveVariable = function (event) {
   var var_email = $('#var_mail').val();
   var var_captcha = $('#var_captcha').val();
   var var_password = $('#var_password').val();
+  var plan = xp.pads[xp.currentPlanId.group][xp.currentPlanId.section][planId];
   if (var_name == '') {
     var_name = var_email;
   }
-  if (var_captcha == '' && plan.editPassword == 0) {
-    alert('Bitte Captcha eingeben!');
-    return false;
-  } else if (var_password == '') {
-    alert('Bitte Passwort eingeben!');
-    return false;
+  if (plan.editPassword == 0) {
+    if (var_captcha == '') {
+      alert('Bitte Captcha eingeben!');
+      return false;
+    }
+  } else {
+    if (var_password == '') {
+      alert('Bitte Passwort eingeben!');
+      return false;
+    }
   }
   var data = {};
   data.id = planId;
