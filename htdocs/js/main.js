@@ -684,7 +684,7 @@ xp.getCellData = function(col, row, edit) {
       && xp.ass[row] && xp.ass[row][col]) {
     ret = xp.ass[row][col]['name'];
   }
-  if (xp.data[row] && xp.data[row][col] && Object.prototype.hasOwnProperty.call(xp.data[row][col], 'text')) {
+  if (ret == '' && xp.data[row] && xp.data[row][col] && Object.prototype.hasOwnProperty.call(xp.data[row][col], 'text')) {
     ret = xp.data[row][col]['text'];
   }
   if (ret == null) { ret = ''; }
