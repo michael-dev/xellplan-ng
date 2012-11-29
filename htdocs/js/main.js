@@ -343,11 +343,47 @@ xp.configureToolbar = function(col,row) {
   $( "#save" ).click({'col': col, 'row':row}, xp.onCellConfirm);
 }
 
+xp.onDisplayVariable = function(event) {
+  event.stopPropagation();
+  $( "#userdialogpw").dialog("close");
+  var pw = $('#var_password2').val();
+  $('#var_password').val(pw);
+  var planId = xp.currentPlanId.id;
+  var row = xp.currentFocus.row;
+  var col = xp.currentFocus.col;
+
+  $.ajax({
+      url: 'ajax/plan.php',
+      type: 'POST',
+      data: {'id': planId, 'action':'listPlanDataEMail', 'password': pw},
+      success: function (values, status, req) {
+                 xp.ass = values.assistant;
+                 $('#var_mail').val(xp.ass[row][col].email);
+                 $("#userdialog").dialog("open");
+               },
+      error: xp.ajaxErrorHandler,
+      async:   false
+ });
+}
+
 xp.onCellClickForUser = function(event) {
   event.stopPropagation();
-  $( "#userdialog").dialog("open");
+  $('#var_password').val('');
+  $('#var_password2').val('');
+
   var row = event.data.row;
   var col = event.data.col;
+  var planId = xp.currentPlanId.id;
+  var group = xp.currentPlanId.group;
+  var section = xp.currentPlanId.section;
+  var plan = xp.pads[group][section][planId];
+
+  if ((plan.editPassword == 1) && !(xp.ass[row] && xp.ass[row][col] && Object.prototype.hasOwnProperty.call(xp.ass[row][col], 'email'))) {
+    $( "#userdialogpw").dialog("open");
+  } else {
+    $( "#userdialog").dialog("open");
+  }
+
   xp.currentFocus = event.data;
   if (xp.ass[row] && xp.ass[row][col]) {
     $('#var_name').val(xp.ass[row][col].name);
@@ -358,12 +394,7 @@ xp.onCellClickForUser = function(event) {
     $('#var_organization').val('');
     $('#var_mail').val('');
   }
-  $('#var_password').val('');
 
-  var planId = xp.currentPlanId.id;
-  var group = xp.currentPlanId.group;
-  var section = xp.currentPlanId.section;
-  var plan = xp.pads[group][section][planId];
   if (plan.editPassword == 1) {
     $('.var_password').show();
     $('.var_captcha').hide();
@@ -426,6 +457,7 @@ xp.onSaveVariable = function (event) {
   $.post('ajax/plan.php', data)
    .success(function (values, status, req) {
      $( "#userdialog").dialog("close");
+     $( "#userdialogpw").dialog("close");
      if (!xp.ass[xp.currentFocus.row]) { xp.ass[xp.currentFocus.row] = []; }
      if (values.data != false) {
        xp.ass[xp.currentFocus.row][xp.currentFocus.col] = values.data;
@@ -442,6 +474,7 @@ xp.onSaveVariable = function (event) {
 }
 xp.onCancelVariable = function (event) {
   $( "#userdialog").dialog("close");
+  $( "#userdialogpw").dialog("close");
   xp.currentFocus = null;
 }
 
@@ -1343,8 +1376,11 @@ xp.init = function() {
   $( "#saveplan" ).button().click(xp.onSavePlan);
   $( "#totemplate" ).button().click(xp.onNewTemplate);
   $( "#userdialog").dialog({'autoOpen':false, 'modal':true, 'width':1000});
+  $( "#userdialogpw").dialog({'autoOpen':false, 'modal':true, 'width':1000});
   $( "#var_save" ).button().click(xp.onSaveVariable);
   $( "#var_cancel" ).button().click(xp.onCancelVariable);
+  $( "#var_display_pw" ).button().click(xp.onDisplayVariable);
+  $( "#var_cancel_pw" ).button().click(xp.onCancelVariable);
   $( "#refreshcaptcha").click(xp.onRefreshCaptcha);
 }
 
