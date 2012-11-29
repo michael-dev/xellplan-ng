@@ -167,20 +167,23 @@ xp.addCell = function(col, row, editable) {
   } else {
     cell.text(text);
   }
-  if (row == -1 && col != -1) {
-    cell.resizable();
-    cell.resizable( {minHeight: xp.getRowHeight(row,edit), 
-                     maxHeight: xp.getRowHeight(row,edit)}
-                  );
-    cell.bind('resizestop',data, xp.onCellResize);
-    cell.bind('resize',data, xp.onCellResizeProg);
-  } else if (row != -1 && col == -1) {
-    cell.resizable( {minWidth: xp.getColWidth(col,edit), 
-                     maxWidth: xp.getColWidth(col,edit)}
-                  );
-    cell.bind('resizestop', data, xp.onCellResize);
-    cell.bind('resize', data, xp.onCellResizeProg);
-  } else if (xp.userCanEditField(col, row) && (editable == 0)) {
+  if (xp.adminMode) {
+    if (row == -1 && col != -1) {
+      cell.resizable();
+      cell.resizable( {minHeight: xp.getRowHeight(row,edit), 
+                       maxHeight: xp.getRowHeight(row,edit)}
+                    );
+      cell.bind('resizestop',data, xp.onCellResize);
+      cell.bind('resize',data, xp.onCellResizeProg);
+    } else if (row != -1 && col == -1) {
+      cell.resizable( {minWidth: xp.getColWidth(col,edit), 
+                       maxWidth: xp.getColWidth(col,edit)}
+                    );
+      cell.bind('resizestop', data, xp.onCellResize);
+      cell.bind('resize', data, xp.onCellResizeProg);
+    }
+  }
+  if (row != -1 && col != -1 && xp.userCanEditField(col, row) && (editable == 0)) {
     cell.click(data, xp.onCellClickForUser);
   }
   cell.appendTo($('#' + xp.containerId));
