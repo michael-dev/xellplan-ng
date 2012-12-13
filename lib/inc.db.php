@@ -101,7 +101,6 @@ function requireAdminAuth() {
       $password = $_SERVER['PHP_AUTH_PW'];
       if (!$pwObj->hashVerify($password, $passwordHash)) {
         unset($_SERVER['PHP_AUTH_USER']);
-	httperror('wrong password');
       }
     } else {
       unset($_SERVER['PHP_AUTH_USER']);
