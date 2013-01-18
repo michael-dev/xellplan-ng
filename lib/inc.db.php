@@ -91,8 +91,10 @@ if ($r === false) {
 }
 
 function requireAdminAuth() {
-  global $pdo, $DB_PREFIX, $pwObj;
-  if (isset($_SERVER['PHP_AUTH_USER'])) {
+  global $pdo, $DB_PREFIX, $pwObj, $attributes, $loginMode;
+
+  # HTTP BASIC auth provided
+  if (isset($_SERVER['PHP_AUTH_USER']) && ($loginMode != "simplesaml")) {
     $userStmt = $pdo->prepare("SELECT password FROM ${DB_PREFIX}users WHERE admin AND email = ?") or die(print_r($pdo->errorInfo(),true));
     $userStmt->execute(Array($_SERVER['PHP_AUTH_USER'])) or die(print_r($userStmt->errorInfo(),true));
     $res = $userStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -105,25 +107,49 @@ function requireAdminAuth() {
     } else {
       unset($_SERVER['PHP_AUTH_USER']);
     }
+  } else {
+    unset($_SERVER['PHP_AUTH_USER']);
   }
-  
-  if (!isset($_SERVER['PHP_AUTH_USER'])) {
+
+  # SimpleSAML auth
+  if (($attributes !== NULL) && !isset($_SERVER['PHP_AUTH_USER']) && ($loginMode != "basic")) {
+    if (in_array("admin", $attributes["groups"])) {
+      $_SERVER['PHP_AUTH_USER'] = $attributes["mail"][0];
+    } else {
+      $userStmt = $pdo->prepare("SELECT * FROM ${DB_PREFIX}users WHERE admin AND email = ?") or die(print_r($pdo->errorInfo(),true));
+      $userStmt->execute(Array($attributes["mail"][0])) or die(print_r($userStmt->errorInfo(),true));
+      $res = $userStmt->fetchAll(PDO::FETCH_ASSOC);
+      if (is_array($res) && count($res) == 1) {
+        $_SERVER['PHP_AUTH_USER'] = $attributes["mail"][0];
+      }
+    }
+  }
+ 
+  # final decision reporting 
+  if (!isset($_SERVER['PHP_AUTH_USER']) && ($loginMode != "simplesaml")) {
       header('WWW-Authenticate: Basic realm="XellPlan-NG Administrator"');
       header('HTTP/1.0 401 Unauthorized');
-      echo 'Admin-Rechte für Nutzerverwaltung benötigt.';
+      echo 'Admin-Rechte für Nutzerverwaltung benötigt. ';
+      if ($loginMode != "basic") echo "Schon das sGIS Login (Login-Leiste oben) probiert?";
+      exit;
+  } else {
+      header('HTTP/1.0 403 Forbidden');
+      echo 'Admin-Rechte für Nutzerverwaltung benötigt. Bitte mittels sGIS einloggen (Login-Leiste oben).';
       exit;
   }
 }
 
 function requireGroupAdmin($groupId) {
-  global $pdo, $DB_PREFIX, $pwObj;
-  if (isset($_SERVER['PHP_AUTH_USER'])) {
+  global $pdo, $DB_PREFIX, $pwObj, $loginMode, $attributes;
+
+  # HTTP BASIC auth provided
+  if (isset($_SERVER['PHP_AUTH_USER']) && ($loginMode != "simplesaml")) {
     $userStmt = $pdo->prepare("SELECT password
                                  FROM ${DB_PREFIX}users
-				WHERE email = ? AND email IN (
+				WHERE email = ? AND (admin OR email IN (
 				       SELECT email
 				         FROM ${DB_PREFIX}rel_user_group rug
-					WHERE group_id = ? )
+					WHERE group_id = ? ))
 			      ") or die(print_r($pdo->errorInfo(),true));
     $userStmt->execute(Array($_SERVER['PHP_AUTH_USER'], $groupId)) or die(print_r($userStmt->errorInfo(),true));
     $res = $userStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -136,25 +162,49 @@ function requireGroupAdmin($groupId) {
     } else {
       unset($_SERVER['PHP_AUTH_USER']);
     }
+  } else {
+    unset($_SERVER['PHP_AUTH_USER']);
+  }
+
+  # SimpleSAML auth
+  if (($attributes !== NULL) && !isset($_SERVER['PHP_AUTH_USER']) && ($loginMode != "basic")) {
+    if (in_array($groupId, $attributes["groups"]) || in_array("admin", $attributes["groups"])) {
+      $_SERVER['PHP_AUTH_USER'] = $attributes["mail"][0];
+    } else {
+      $userStmt = $pdo->prepare("SELECT * FROM ${DB_PREFIX}rel_user_group rug WHERE group_id = ? AND email = ?") or die(print_r($pdo->errorInfo(),true));
+      $userStmt->execute(Array($groupId, $attributes["mail"][0])) or die(print_r($userStmt->errorInfo(),true));
+      $res = $userStmt->fetchAll(PDO::FETCH_ASSOC);
+      if (is_array($res) && count($res) > 0) {
+        $_SERVER['PHP_AUTH_USER'] = $attributes["mail"][0];
+      }
+    }
   }
   
-  if (!isset($_SERVER['PHP_AUTH_USER'])) {
+  # final decision reporting 
+  if (!isset($_SERVER['PHP_AUTH_USER']) && ($loginMode != "simplesaml")) {
       header('WWW-Authenticate: Basic realm="XellPlan-NG Gruppeadministrator "'.$groupId);
       header('HTTP/1.0 401 Unauthorized');
-      echo 'Admin-Rechte für Gruppe '.htmlspecialchars($groupId).' benötigt.';
+      echo 'Admin-Rechte für Gruppe '.htmlspecialchars($groupId).' benötigt. ';
+      if ($loginMode != "basic") echo "Schon das sGIS Login (Login-Leiste oben) probiert?";
+      exit;
+  } else {
+      header('HTTP/1.0 403 Forbidden');
+      echo 'Admin-Rechte für Gruppe benötigt. Bitte mittels sGIS einloggen (Login-Leiste oben).';
       exit;
   }
 }
 
 function requirePadAdmin($padId) {
-  global $pdo, $DB_PREFIX, $pwObj;
-  if (isset($_SERVER['PHP_AUTH_USER'])) {
+  global $pdo, $DB_PREFIX, $pwObj, $attributes, $loginMode;
+
+  # HTTP BASIC auth provided
+  if (isset($_SERVER['PHP_AUTH_USER']) && ($loginMode != "simplesaml")) {
     $userStmt = $pdo->prepare("SELECT password
                                  FROM ${DB_PREFIX}users
-				WHERE email = ? AND email IN (
+				WHERE email = ? AND (admin OR email IN (
 				       SELECT email
 				         FROM ${DB_PREFIX}rel_user_group rug INNER JOIN ${DB_PREFIX}pads p ON p.group_id = rug.group_id
-					WHERE p.id = ? )
+					WHERE p.id = ? ))
 			      ") or die(print_r($pdo->errorInfo(),true));
     $userStmt->execute(Array($_SERVER['PHP_AUTH_USER'], $padId)) or die(print_r($userStmt->errorInfo(),true));
     $res = $userStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -167,7 +217,10 @@ function requirePadAdmin($padId) {
     } else {
       unset($_SERVER['PHP_AUTH_USER']);
     }
+  } else {
+    unset($_SERVER['PHP_AUTH_USER']);
   }
+  # pad password stays permitted even with loginMode == simplesaml
   if (isset($_SERVER['PHP_AUTH_PW']) && !isset($_SERVER['PHP_AUTH_USER'])) {
     $padStmt = $pdo->prepare("SELECT adminPassword FROM ${DB_PREFIX}pads WHERE id = ? AND (adminPassword IS NOT NULL)") or die(print_r($pdo->errorInfo(),true));
     $padStmt->execute(Array($padId)) or die(print_r($userStmt->errorInfo(),true));
@@ -183,10 +236,35 @@ function requirePadAdmin($padId) {
     }
   }
 
+  # SimpleSAML auth
+  if (($attributes !== NULL) && !isset($_SERVER['PHP_AUTH_USER']) && ($loginMode != "basic")) {
+    $grpStmt = $pdo->prepare("SELECT group_id FROM ${DB_PREFIX}pads p WHERE id = ?") or die(print_r($pdo->errorInfo(),true));
+    $grpStmt->execute(Array($padId)) or die(print_r($grpStmt->errorInfo(),true));
+    if ($grpStmt->rowCount() > 0) {
+      $padGroup = $grpStmt->fetchColumn();
+      if (in_array($padGroup, $attributes["groups"]) || in_array("admin", $attributes["groups"])) {
+        $_SERVER['PHP_AUTH_USER'] = $attributes["mail"][0];
+        $_SERVER['PHP_AUTH_PW'] = 'any';
+      } else {
+        $userStmt = $pdo->prepare("SELECT * FROM ${DB_PREFIX}rel_user_group rug WHERE group_id = ? AND email = ?") or die(print_r($pdo->errorInfo(),true));
+        $userStmt->execute(Array($groupId, $attributes["mail"][0])) or die(print_r($userStmt->errorInfo(),true));
+        $res = $userStmt->fetchAll(PDO::FETCH_ASSOC);
+        if (is_array($res) && count($res) > 0) {
+          $_SERVER['PHP_AUTH_USER'] = $attributes["mail"][0];
+          $_SERVER['PHP_AUTH_PW'] = 'any';
+        }
+      }
+    } else {
+      httperror("Pad not found.");
+    }
+  }
+
+  # final decision reporting 
   if (!isset($_SERVER['PHP_AUTH_PW'])) {
       header('WWW-Authenticate: Basic realm="XellPlan-NG Plan-Administrator "'.$planId);
       header('HTTP/1.0 401 Unauthorized');
-      echo 'Admin-Rechte für Pad '.htmlspecialchars($padId).' benötigt.';
+      echo 'Admin-Rechte für Pad '.htmlspecialchars($padId).' benötigt. ';
+      if ($loginMode != "basic") echo "Schon das sGIS Login (Login-Leiste oben) probiert?";
       exit;
   }
 }

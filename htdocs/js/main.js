@@ -21,6 +21,8 @@ xp.adminMode = false;
 xp.currentPlanId = null;
 xp.firstRun = true;
 xp.log = {};
+xp.login = null;
+xp.loginTimer = null;
 
 if (! Array.prototype.clone ) {
   Array.prototype.clone = function() {
@@ -1341,6 +1343,35 @@ xp.switchTplListToSection = function(event) {
   }
 }
 
+xp.setLoginStatus = function() {
+  $.post('ajax/login.php', {url: self.location.href})
+   .success(function (values, textStatus, jqXHR) {
+    xp.login = values;
+    if (xp.login.loginMode != "basic") {
+      $('.login').show();
+      if (xp.login.isAuth) {
+        $('.loginauth').show();
+        $('.loginnoauth').hide();
+        $('.loginemail').text(xp.login.email);
+      } else {
+        $('.loginauth').hide();
+        $('.loginnoauth').show();
+      }
+      $('.loginbtn').attr('href',xp.login.loginUrl);
+      $('.logoutbtn').attr('href',xp.login.logoutUrl);
+    } else {
+      $('.login').hide();
+      clearInterval(xp.loginTimer);
+    }
+  });
+  // no error handler -> would be called too often
+}
+
+xp.onLoginClick = function(event) {
+  // prompt for username/password 
+  return false;
+}
+
 xp.init = function() {
   $('#toolbar').hide();
   $('#admintoolbar').hide();
@@ -1382,6 +1413,8 @@ xp.init = function() {
   $( "#var_display_pw" ).button().click(xp.onDisplayVariable);
   $( "#var_cancel_pw" ).button().click(xp.onCancelVariable);
   $( "#refreshcaptcha").click(xp.onRefreshCaptcha);
+  $( "#loginbtn").click(xp.onLoginClick);
+  xp.loginTimer = setInterval(xp.setLoginStatus,1000);
 }
 
 if (!Object.keys) {
