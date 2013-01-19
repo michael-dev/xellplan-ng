@@ -1,6 +1,6 @@
-[submodule "externals/password-lib"]
-	path = externals/password-lib
-	url = https://github.com/mattcolf/php-password-library.git
 [submodule "externals/phpcaptcha"]
 	path = externals/phpcaptcha
 	url = https://github.com/dapphp/securimage.git
+[submodule "externals/password-lib"]
+	path = externals/password-lib
+	url = https://github.com/ircmaxell/PHP-PasswordLib
