@@ -113,7 +113,7 @@ function requireAdminAuth() {
 
   # SimpleSAML auth
   if (($attributes !== NULL) && !isset($_SERVER['PHP_AUTH_USER']) && ($loginMode != "basic")) {
-    if (in_array("admin", $attributes["groups"])) {
+    if (in_arrayi("admin", $attributes["groups"])) {
       $_SERVER['PHP_AUTH_USER'] = $attributes["mail"][0];
     } else {
       $userStmt = $pdo->prepare("SELECT * FROM ${DB_PREFIX}users WHERE admin AND email = ?") or die(print_r($pdo->errorInfo(),true));
@@ -168,7 +168,7 @@ function requireGroupAdmin($groupId) {
 
   # SimpleSAML auth
   if (($attributes !== NULL) && !isset($_SERVER['PHP_AUTH_USER']) && ($loginMode != "basic")) {
-    if (in_array($groupId, $attributes["groups"]) || in_array("admin", $attributes["groups"])) {
+    if (in_arrayi($groupId, $attributes["groups"]) || in_arrayi("admin", $attributes["groups"])) {
       $_SERVER['PHP_AUTH_USER'] = $attributes["mail"][0];
     } else {
       $userStmt = $pdo->prepare("SELECT * FROM ${DB_PREFIX}rel_user_group rug WHERE group_id = ? AND email = ?") or die(print_r($pdo->errorInfo(),true));
@@ -242,7 +242,7 @@ function requirePadAdmin($padId) {
     $grpStmt->execute(Array($padId)) or die(print_r($grpStmt->errorInfo(),true));
     if ($grpStmt->rowCount() > 0) {
       $padGroup = $grpStmt->fetchColumn();
-      if (in_array($padGroup, $attributes["groups"]) || in_array("admin", $attributes["groups"])) {
+      if (in_arrayi($padGroup, $attributes["groups"]) || in_array("admin", $attributes["groups"])) {
         $_SERVER['PHP_AUTH_USER'] = $attributes["mail"][0];
         $_SERVER['PHP_AUTH_PW'] = 'any';
       } else {
