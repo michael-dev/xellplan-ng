@@ -132,7 +132,7 @@ function requireAdminAuth() {
       echo 'Admin-Rechte für Nutzerverwaltung benötigt. ';
       if ($loginMode != "basic") echo "Schon das sGIS Login (Login-Leiste oben) probiert?";
       exit;
-  } else {
+  } else if (!isset($_SERVER['PHP_AUTH_USER'])) {
       header('HTTP/1.0 403 Forbidden');
       echo 'Admin-Rechte für Nutzerverwaltung benötigt. Bitte mittels sGIS einloggen (Login-Leiste oben).';
       exit;
@@ -187,7 +187,7 @@ function requireGroupAdmin($groupId) {
       echo 'Admin-Rechte für Gruppe '.htmlspecialchars($groupId).' benötigt. ';
       if ($loginMode != "basic") echo "Schon das sGIS Login (Login-Leiste oben) probiert?";
       exit;
-  } else {
+  } else if (!isset($_SERVER['PHP_AUTH_USER'])) {
       header('HTTP/1.0 403 Forbidden');
       echo 'Admin-Rechte für Gruppe benötigt. Bitte mittels sGIS einloggen (Login-Leiste oben).';
       exit;
