@@ -360,8 +360,17 @@ xp.onDisplayVariable = function(event) {
       data: {'id': planId, 'action':'listPlanDataEMail', 'password': pw},
       success: function (values, status, req) {
                  xp.ass = values.assistant;
-                 $('#var_mail').val(xp.ass[row][col].email);
+                 if (xp.ass[row] && xp.ass[row][col]) {
+                   $('#var_mail').val(xp.ass[row][col].email);
+                 } else {
+                   $('#var_mail').val('');
+                 }
                  $("#userdialog").dialog("open");
+                 $( "#userdialog").dialog("widget").position({
+                   my: 'left top',
+                   at: 'left top',
+                   of: $("#" + xp.getCellId(col, row, 0))
+                 });
                },
       error: xp.ajaxErrorHandler,
       async:   false
@@ -382,8 +391,18 @@ xp.onCellClickForUser = function(event) {
 
   if ((plan.editPassword == 1) && !(xp.ass[row] && xp.ass[row][col] && Object.prototype.hasOwnProperty.call(xp.ass[row][col], 'email'))) {
     $( "#userdialogpw").dialog("open");
+    $( "#userdialogpw").dialog("widget").position({
+       my: 'left top',
+       at: 'left top',
+       of: $(this)
+    });
   } else {
     $( "#userdialog").dialog("open");
+    $( "#userdialog").dialog("widget").position({
+       my: 'left top',
+       at: 'left top',
+       of: $(this)
+    });
   }
 
   xp.currentFocus = event.data;
