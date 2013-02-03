@@ -7,7 +7,7 @@ requireAdminAuth();
 switch ($_REQUEST["action"]):
  case "save":
    if (isset($_REQUEST["password"])) {
-     $_REQUEST["password"] = $pwObj->hashPassword($_REQUEST["password"]);
+     $_REQUEST["password"] = $pwObj->createPasswordHash($_REQUEST["password"]);
    }
    if (empty($_REQUEST["uid"])) {
      $userStmt = $pdo->prepare("INSERT INTO ${DB_PREFIX}users (email, password, admin) VALUES (?, ?, ?)") or httperror($pdo->errorInfo());

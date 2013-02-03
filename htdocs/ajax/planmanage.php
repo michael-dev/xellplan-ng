@@ -41,7 +41,7 @@ switch ($_REQUEST["action"]):
      if (!isset($_REQUEST[$key])) { continue; }
      $value = $_REQUEST[$key];
      if (empty($value)) { $value = NULL; }
-     elseif ($key == "editPassword" || $key == "adminPassword") { $value = $pwObj->hashPassword($value); }
+     elseif ($key == "editPassword" || $key == "adminPassword") { $value = $pwObj->createPasswordHash($value); }
      $updPlanStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pads SET $key = ? WHERE id = ?") or httperror($pdo->errorInfo());
      $updPlanStmt->execute(Array($value, $_REQUEST["id"])) or httperror($updPlanStmt->errorInfo());
    }

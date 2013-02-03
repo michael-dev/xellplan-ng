@@ -101,7 +101,7 @@ function requireAdminAuth() {
     if (is_array($res) && count($res) == 1) {
       $passwordHash = $res[0]["password"];
       $password = $_SERVER['PHP_AUTH_PW'];
-      if (!$pwObj->hashVerify($password, $passwordHash)) {
+      if (!$pwObj->verifyPasswordHash($password, $passwordHash)) {
         unset($_SERVER['PHP_AUTH_USER']);
       }
     } else {
@@ -156,7 +156,7 @@ function requireGroupAdmin($groupId) {
     if (is_array($res) && count($res) == 1) {
       $passwordHash = $res[0]["password"];
       $password = $_SERVER['PHP_AUTH_PW'];
-      if (!$pwObj->hashVerify($password, $passwordHash)) {
+      if (!$pwObj->verifyPasswordHash($password, $passwordHash)) {
         unset($_SERVER['PHP_AUTH_USER']);
       }
     } else {
@@ -211,7 +211,7 @@ function requirePadAdmin($padId) {
     if (is_array($res) && count($res) == 1) {
       $passwordHash = $res[0]["password"];
       $password = $_SERVER['PHP_AUTH_PW'];
-      if (!$pwObj->hashVerify($password, $passwordHash)) {
+      if (!$pwObj->verifyPasswordHash($password, $passwordHash)) {
         unset($_SERVER['PHP_AUTH_USER']);
       }
     } else {
@@ -228,7 +228,7 @@ function requirePadAdmin($padId) {
     if (is_array($res) && count($res) == 1 && !empty($res[0]["adminPassword"])) {
       $passwordHash = $res[0]["adminPassword"];
       $password = $_SERVER['PHP_AUTH_PW'];
-      if (!$pwObj->hashVerify($password, $passwordHash)) {
+      if (!$pwObj->verifyPasswordHash($password, $passwordHash)) {
         unset($_SERVER['PHP_AUTH_PW']);
       }
     } else {

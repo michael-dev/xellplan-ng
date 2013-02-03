@@ -54,7 +54,7 @@ switch ($_REQUEST["action"]):
   if ($row["editPassword"] !== null) {
     $password = $_REQUEST["password"];
     $passwordHash = $row["editPassword"];
-    if (!$pwObj->hashVerify($password, $passwordHash)) {
+    if (!$pwObj->verifyPasswordHash($password, $passwordHash)) {
       httperror("Passwort war falsch");
     }
   }
@@ -81,7 +81,7 @@ switch ($_REQUEST["action"]):
    } else {
      $password = $_REQUEST["password"];
      $passwordHash = $row["editPassword"];
-     if (!$pwObj->hashVerify($password, $passwordHash)) {
+     if (!$pwObj->verifyPasswordHash($password, $passwordHash)) {
        httperror("Passwort war falsch");
      }
    }
