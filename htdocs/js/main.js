@@ -172,13 +172,13 @@ xp.addCell = function(col, row, editable) {
   if (xp.adminMode) {
     if (row == -1 && col != -1) {
       cell.resizable();
-      cell.resizable( {minHeight: xp.getRowHeight(row,edit), 
+      cell.resizable( {minHeight: xp.getRowHeight(row,edit),
                        maxHeight: xp.getRowHeight(row,edit)}
                     );
       cell.bind('resizestop',data, xp.onCellResize);
       cell.bind('resize',data, xp.onCellResizeProg);
     } else if (row != -1 && col == -1) {
-      cell.resizable( {minWidth: xp.getColWidth(col,edit), 
+      cell.resizable( {minWidth: xp.getColWidth(col,edit),
                        maxWidth: xp.getColWidth(col,edit)}
                     );
       cell.bind('resizestop', data, xp.onCellResize);
@@ -747,7 +747,7 @@ xp.getCellClasses = function(col, row) {
 
 xp.onTabChange = function(event, ui) {
   switch (ui.panel.id) {
-    case "planlist": 
+    case "planlist":
       xp.initSelection();
      break;
     case "plan":
@@ -980,7 +980,7 @@ xp.onSelectGroup = function() {
 }
 
 xp.initSelection = function() {
-  $('#section2').val(''); 
+  $('#section2').val('');
   $.post('ajax/list.php', {})
    .success(function (values, status, req) {
      xp.pads = values;
@@ -1007,10 +1007,10 @@ xp.initSelection = function() {
          for (var section in values[group]) {
            if (section != '') {
              $('<option/>', {value: JSON.stringify({'group':group, 'section':section}), text: section}).appendTo(grpObj);
-	     if (xp.firstRun && qs["planId"] && Object.prototype.hasOwnProperty.call(values[group][section], qs["planId"])) {
+             if (xp.firstRun && qs["planId"] && Object.prototype.hasOwnProperty.call(values[group][section], qs["planId"])) {
                qs["group"] = group;
-	       qs["section"] = section;
-	     }
+               qs["section"] = section;
+             }
            }
          }
        }
@@ -1124,9 +1124,9 @@ xp.configureUserToolbar = function() {
         numTotal++;
         if (xp.ass[row] && xp.ass[row][col]) {
           numDone++;
-	} else {
-	  numOpen++;
-	}
+        } else {
+          numOpen++;
+        }
       }
     }
   }
@@ -1255,12 +1255,12 @@ xp.onDeletePlan = function(event) {
 }
 
 xp.ajaxErrorHandler = function (jqXHR, textStatus, errorThrown) {
-      t = window.open('','fehler');
-      t.document.open('text/plain');
-      t.document.writeln(textStatus);
-      t.document.writeln(errorThrown);
-      t.document.writeln(jqXHR.responseText);
-      t.document.close();
+  t = window.open('','fehler');
+  t.document.open('text/plain');
+  t.document.writeln(textStatus);
+  t.document.writeln(errorThrown);
+  t.document.writeln(jqXHR.responseText);
+  t.document.close();
 };
 
 xp.onSavePlan = function(event) {
@@ -1368,7 +1368,7 @@ xp.setLoginStatus = function() {
 }
 
 xp.onLoginClick = function(event) {
-  // prompt for username/password 
+  // prompt for username/password
   return false;
 }
 
@@ -1418,17 +1418,18 @@ xp.init = function() {
 }
 
 if (!Object.keys) {
-    Object.keys = function (obj) {
-        var keys = [],
-            k;
-        for (k in obj) {
-            if (Object.prototype.hasOwnProperty.call(obj, k)) {
-                keys.push(k);
-            }
-        }
-        return keys;
-    };
+  Object.keys = function (obj) {
+    var keys = [],
+    k;
+    for (k in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, k)) {
+        keys.push(k);
+      }
+    }
+    return keys;
+  };
 }
 
 $(xp.init);
 
+// vim: set expandtab ts=2 sw=2
