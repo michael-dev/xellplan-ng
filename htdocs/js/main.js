@@ -990,6 +990,7 @@ xp.initSelection = function() {
      $('#tpllist').empty();
      $('<option/>', {value: '', text: 'leere Vorlage'}).appendTo($('#tpllist'));
      var qs = jQuery.parseQuerystring();
+     var alreadySelected = false;
 
      for (var group in values) {
        $( '#grplist3').append($('<option>', {value: group, text: group}));
@@ -1006,7 +1007,16 @@ xp.initSelection = function() {
          var grpObj = $('<optgroup/>', {label: group}).appendTo($('#section'));
          for (var section in values[group]) {
            if (section != '') {
-             $('<option/>', {value: JSON.stringify({'group':group, 'section':section}), text: section}).appendTo(grpObj);
+             var opt = $('<option/>', {value: JSON.stringify({'group':group, 'section':section}), text: section}).appendTo(grpObj);
+             /* find editable plan */
+             for (var k in values[group][section]) {
+               var plan = values[group][section][k];
+               if (plan.userEditable == 1 && !alreadySelected) {
+                 opt.attr('selected','selected');
+                 alreadySelected = true;
+               }
+             }
+             /* query string jump */
              if (xp.firstRun && qs["planId"] && Object.prototype.hasOwnProperty.call(values[group][section], qs["planId"])) {
                qs["group"] = group;
                qs["section"] = section;
