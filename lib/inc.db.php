@@ -261,7 +261,7 @@ function requirePadAdmin($padId) {
 
   # final decision reporting 
   if (!isset($_SERVER['PHP_AUTH_PW'])) {
-      header('WWW-Authenticate: Basic realm="XellPlan-NG Plan-Administrator "'.$planId);
+      header('WWW-Authenticate: Basic realm="XellPlan-NG Plan-Administrator "'.$padId);
       header('HTTP/1.0 401 Unauthorized');
       echo 'Admin-Rechte für Pad '.htmlspecialchars($padId).' benötigt. ';
       if ($loginMode != "basic") echo "Schon das sGIS Login (Login-Leiste oben) probiert?";
