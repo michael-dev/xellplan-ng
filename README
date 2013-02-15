@@ -21,6 +21,14 @@ Rechteverwaltung
     Das Administrationspasswort erlaubt die Administration eines Planes, ohne dass der Nutzer Gruppenadministrator sein muss.
     Das Nutzerpasswort erlaubt das Ein- und Austragen von Diensten.
 
+Einrichtung
+------------
+
+ - Die Tabellen werden automatisch erzeugt, der SQL Nutzer muss dafür entsprechende Rechte besitzen.
+ - Einstellungen werden in config/config.php getätigt.
+   - combined und simplesaml setzen eine SimpleSAML Installation voraus.
+ - initiale Zugangsdaten: admin:admin
+
 Lizenz / COPYING
 -----------------
 

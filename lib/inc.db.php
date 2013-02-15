@@ -44,7 +44,7 @@ if ($r === false) {
                                                  password VARCHAR(128),
                                                     admin BOOLEAN,
                                                   PRIMARY KEY (email) );") or die(print_r($pdo->errorInfo(),true));
-  $pdo->query("INSERT INTO ${DB_PREFIX}users (email, password, admin) VALUES ( 'm.braun@tu-ilmenau.de', '\$2a\$10\$J7BONCOLB6BrLUhM3KtD8upYL9C/yM7g.9d9PUhPb1Qp6/0TY1xsi', 1)");
+  $pdo->query("INSERT INTO ${DB_PREFIX}users (email, password, admin) VALUES ( 'admin', '\$2y\$10\$gFtl2i6S.AkEX96QJ5.ujOiy1OGVlo2HxAqAU7gsf.w7DNX21lKju', 1)");
 }
 
 $r = $pdo->query("SELECT COUNT(*) FROM ${DB_PREFIX}rel_user_group");
