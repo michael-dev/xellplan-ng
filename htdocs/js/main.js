@@ -28,7 +28,7 @@ if (! Array.prototype.clone ) {
   Array.prototype.clone = function() {
     var arr1 = new Array();
     for (var property in this) {
-        arr1[property] = typeof(this[property]) == 'object' ? this[property].clone() : this[property]
+        arr1[property] = this[property];
     }
     return arr1;
   }
@@ -994,7 +994,9 @@ xp.onSelectGroup = function() {
   }
   for (var k in xp.groups[currentGroup].members) {
     var v = xp.groups[currentGroup].members[k];
-    $('#grpadm').append($('<li>', {text: v}));
+    if (k != 'clone') {
+      $('#grpadm').append($('<li>', {text: v}));
+    }
   }
 }
 

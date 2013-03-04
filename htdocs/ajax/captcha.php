@@ -3,9 +3,16 @@
 include '../../lib/inc.all.php';
 
 $result = Array();
+global $captchaCookie;
 
-$captchaId = Securimage::getCaptchaId();
-$options = array('captchaId'  => $captchaId, 'no_session' => true, 'no_exit' => true);
+if ($captchaCookie) {
+  $captchaId = null;
+  $options = array('no_exit' => true);
+} else {
+  $captchaId = Securimage::getCaptchaId();
+  $options = array('captchaId'  => $captchaId, 'no_session' => true, 'no_exit' => true);
+}
+
 $captcha = new Securimage($options);
 ob_start();   // start the output buffer
 $captcha->show();

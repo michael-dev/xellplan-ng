@@ -74,8 +74,18 @@ switch ($_REQUEST["action"]):
      httperror("Dieser Plan ist nicht editierbar.");
    }
    if ($row["editPassword"] === null) {
-     if (empty($_REQUEST["captchaId"])) { httperror("empty captcha id supplied"); }
-     if (Securimage::checkByCaptchaId($_REQUEST["captchaId"], $_REQUEST["captcha"]) != true) {
+     // checkCaptcha($captchaId, $captcha)
+     global $captchaCookie;
+
+     if ($captchaCookie) {
+       $options = array('no_exit' => true);
+       $captcha = new Securimage($options);
+       $captchaOk = $captcha->check($_REQUEST["captcha"]);
+     } else {
+       if (empty($_REQUEST["captchaId"])) { httperror("empty captcha id supplied"); }
+       $captchaOk = Securimage::checkByCaptchaId($_REQUEST["captchaId"], $_REQUEST["captcha"]);
+     }
+     if (!$captchaOk) {
        httperror("Captcha war falsch.");
      }
    } else {
