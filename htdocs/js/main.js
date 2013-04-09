@@ -1215,6 +1215,65 @@ xp.configureAdminToolbar = function() {
   }
 }
 
+/* takes YYYY-MM-DD HH:MM:SS string and returns Date object */
+xp.parseDateString = function(str) {
+  var tmp = str.split(" ");
+  var tmp2 = tmp[0].split("-");
+  var str_jahr = tmp2[0];
+  var str_monat = tmp2[1];
+  var str_tag = tmp2[2];
+  var tmp2 = tmp[1].split(":");
+  var str_stunde = tmp2[0];
+  var str_minute = tmp2[1];
+  var str_sekunde = tmp2[2];
+  return new Date(str_jahr, str_monat - 1, str_tag, str_stunde, str_minute, str_sekunde);
+}
+
+xp.formatTime = function(obj) {
+  var ret = String(obj.getHours());
+  if (obj.getMinutes() != 0 || obj.getSeconds() != 0) {
+    ret += ':';
+    if (obj.getMinutes() < 10) { ret += '0'; }
+    ret += obj.getMinutes();
+    if (obj.getSeconds() != 0) {
+      ret += ':';
+      if (obj.getSeconds() < 10) { ret += '0'; }
+      ret += obj.getSeconds();
+    }
+  }
+  ret += 'h';
+  return ret;
+}
+
+xp.formatTimeRange = function(von, bis) {
+  von = xp.parseDateString(von);
+  bis = xp.parseDateString(bis);
+  var jetzt = new Date();
+
+  var ret = '';
+  // render von
+  var format = 'd. M yy';
+  if (jetzt.getFullYear() == von.getFullYear()) {
+    format = 'd. M';
+  }
+  ret += $.datepicker.formatDate(format, von);
+  ret += ' ' + xp.formatTime(von);
+  ret += ' bis ';
+  // render bis
+  if (von.getFullYear() != bis.getFullYear() ||
+      von.getMonth() != bis.getMonth() ||
+      von.getDate() != bis.getDate()) {
+    var format = 'd. M yy';
+    if (jetzt.getFullYear() == bis.getFullYear()) {
+      format = 'd. M';
+    }
+    ret += $.datepicker.formatDate(format, bis);
+  }
+  ret += ' ' + xp.formatTime(bis);
+
+  return ret;
+}
+
 xp.switchPlanListToSection = function(event) {
   if (event != null) {
     event.stopPropagation();
@@ -1238,15 +1297,9 @@ xp.switchPlanListToSection = function(event) {
       tr.addClass('ineditablePlan');
     }
     $('<div/>').appendTo(tr).text(plan.name);
-    $('<div/>').appendTo(tr).text(plan.eventStart);
-    $('<div/>').appendTo(tr).text(plan.eventEnd);
-    $('<div/>').appendTo(tr).text(plan.editStart);
-    $('<div/>').appendTo(tr).text(plan.editEnd);
-    var contact = plan.contact;
-    if (contact == '' || !contact) {
-      contact = plan.creator;
-    }
-    $('<a/>').appendTo($('<div/>').appendTo(tr)).text(contact).attr('href','mailto:'+contact).click(false);
+    var zeit1 = 'Projekt: ' + xp.formatTimeRange(plan.eventStart, plan.eventEnd);
+    var zeit2 = 'Eintragen: ' + xp.formatTimeRange(plan.editStart, plan.editEnd);
+    $('<div/>').appendTo(tr).append($('<span/>').text(zeit1)).append($('<br/>')).append($('<span/>').text(zeit2));
     if (plan.editPassword == 1) {
       $('<div/>').appendTo(tr).text('ERFORDERLICH');
     } else {
