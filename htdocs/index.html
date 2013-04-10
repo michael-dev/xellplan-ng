@@ -1,11 +1,13 @@
+<!DOCTYPE html>
 <html>
  <head>
   <title>Aufgabenplaner</title>
-  <script type="text/javascript" src="js/jquery-1.8.2.js"></script>
-  <script type="text/javascript" src="js/jquery-ui-1.9.0.custom.js"></script>
+  <script type="text/javascript" src="js/json2.js"></script>
+  <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
+  <script type="text/javascript" src="js/jquery-ui-1.10.2.custom.js"></script>
   <script type="text/javascript" src="js/jquery-ui-timepicker-addon.js"></script>
   <script type="text/javascript" src="js/main.js"></script>
-  <link rel="stylesheet" type="text/css" href="css/jquery-ui-1.9.0.custom.css"/>
+  <link rel="stylesheet" type="text/css" href="css/jquery-ui-1.10.2.custom.css"/>
   <link rel="stylesheet" type="text/css" href="css/jquery-ui-timepicker-addon.css"/>
   <link rel="stylesheet" type="text/css" href="css/main.css"/>
  </head>
@@ -29,15 +31,15 @@
       <form action="#">
         <label for="section">Bereich:</label> <select id="section" name="section" size="1"></select>
       </form>
-      <ul id="ulplanlist">
-       <li class="header">
-        <div>Plan-Name</div>
-	<div>Zeitraum</div>
-	<div>Passwort</div>
-       </li>
-       <span id="dplanlist">
-       </span>
-      </ul>
+      <table id="ulplanlist">
+       <tr class="header">
+        <th>Plan-Name</th>
+        <th>Zeitraum</th>
+        <th>Passwort</th>
+       </tr>
+       <tbody id="dplanlist">
+       </tbody>
+      </table>
       </fieldset>
       <fieldset><legend>Neuen Plan anlegen</legend>
       <form action="#">
@@ -70,9 +72,9 @@
         <button id="deleteplan">Plan löschen</button>
         <button id="saveplan">Meta-Daten speichern</button>
 	<fieldset><legend>Meta-Daten</legend>
-        <div><label for="group_id">Gruppe</label>: <span id="admintoolbar_group_id"/></div>
+        <div><label for="group_id">Gruppe</label>: <span id="admintoolbar_group_id"></span></div>
         <div><label for="section_id">Bereich</label>: <input type="text" id="admintoolbar_section_id" name="section_id"/></div>
-        <div><label for="id">Nr</label>: <span id="admintoolbar_id"/></div>
+        <div><label for="id">Nr</label>: <span id="admintoolbar_id"></span></div>
         <div><label for="name">Name</label>: <input type="text" id="admintoolbar_name" name="name"/></div>
 	<hr/>
         <div><label for="comment">Kommentar</label>: <textarea type="text" id="admintoolbar_comment" name="comment"></textarea></div>
@@ -80,7 +82,7 @@
         <div><label for="eventEnd">Event-End</label>: <input type="text" id="admintoolbar_eventEnd" name="eventEnd"/></div>
         <div><label for="editStart">Bearbeiten ab</label>: <input type="text" id="admintoolbar_editStart" name="editStart"/></div>
         <div><label for="editEnd">Bearbeiten bis</label>: <input type="text" id="admintoolbar_editEnd" name="editEnd"/></div>
-        <div><label for="creator">Angelegt von</label>: <span id="admintoolbar_creator"/></div>
+        <div><label for="creator">Angelegt von</label>: <span id="admintoolbar_creator"></span></div>
         <div><label for="contact">Kontakt</label>: <input type="text" id="admintoolbar_contact" name="contact"/></div>
         <div><label for="editPassword">Passwort für Nutzer</label>: <input type="text" id="admintoolbar_editPassword" name="editPassword"/></div>
         <div><label for="adminPassword">Passwort für Admins</label>: <input type="text" id="admintoolbar_adminPassword" name="adminPassword"/></div>

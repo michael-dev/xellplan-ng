@@ -196,6 +196,10 @@ xp.addCell = function(col, row, editable) {
 
 // per-pixel resize
 xp.onCellResizeProg = function(event, ui) {
+  if (!ui || !ui.size) {
+    xp.resizeTable();
+    return;
+  }
   if (event.data.row == -1 && event.data.col != -1) {
     xp.colWidths[event.data.col] = Math.round(ui.size.width);
     xp.resizeTable();
@@ -765,14 +769,14 @@ xp.getCellClasses = function(col, row) {
 }
 
 xp.onTabChange = function(event, ui) {
-  switch (ui.panel.id) {
+  switch (ui.newPanel.attr('id')) {
     case "planlist":
       xp.initSelection();
      break;
     case "plan":
      if (xp.currentPlanId == null) {
        alert("Es wurde kein Plan ausgewählt.");
-       $("#tabs").tabs("select", "#planlist");
+       $("#tabs").tabs( "option", "active", 0);
        return false;
      }
      xp.initTable();
@@ -780,7 +784,7 @@ xp.onTabChange = function(event, ui) {
     case "planlog":
      if (xp.currentPlanId == null) {
        alert("Es wurde kein Plan ausgewählt.");
-       $("#tabs").tabs("select", "#planlist");
+       $("#tabs").tabs( "option", "active", 0);
        return false;
      }
      xp.initLog();
@@ -1118,7 +1122,7 @@ xp.switchToPlan = function(data) {
      xp.numRow = size[1];
      xp.configureUserToolbar();
      xp.configureAdminToolbar();
-     $("#tabs").tabs("select", "#plan");
+     $("#tabs").tabs( "option", "active", 1);
     })
    .error(xp.ajaxErrorHandler);
 }
@@ -1217,6 +1221,7 @@ xp.configureAdminToolbar = function() {
 
 /* takes YYYY-MM-DD HH:MM:SS string and returns Date object */
 xp.parseDateString = function(str) {
+  if (str === null) { return null; }
   var tmp = str.split(" ");
   var tmp2 = tmp[0].split("-");
   var str_jahr = tmp2[0];
@@ -1253,23 +1258,27 @@ xp.formatTimeRange = function(von, bis) {
   var ret = '';
   // render von
   var format = 'd. M yy';
-  if (jetzt.getFullYear() == von.getFullYear()) {
-    format = 'd. M';
-  }
-  ret += $.datepicker.formatDate(format, von);
-  ret += ' ' + xp.formatTime(von);
-  ret += ' bis ';
-  // render bis
-  if (von.getFullYear() != bis.getFullYear() ||
-      von.getMonth() != bis.getMonth() ||
-      von.getDate() != bis.getDate()) {
-    var format = 'd. M yy';
-    if (jetzt.getFullYear() == bis.getFullYear()) {
+  if (von !== null) {
+    if (jetzt.getFullYear() == von.getFullYear()) {
       format = 'd. M';
     }
-    ret += $.datepicker.formatDate(format, bis);
+    ret += $.datepicker.formatDate(format, von);
+    ret += ' ' + xp.formatTime(von);
   }
-  ret += ' ' + xp.formatTime(bis);
+  ret += ' bis ';
+  // render bis
+  if (bis != null) {
+    if (von !== null && (von.getFullYear() != bis.getFullYear() ||
+        von.getMonth() != bis.getMonth() ||
+        von.getDate() != bis.getDate())) {
+      var format = 'd. M yy';
+      if (jetzt.getFullYear() == bis.getFullYear()) {
+        format = 'd. M';
+      }
+      ret += $.datepicker.formatDate(format, bis);
+    }
+    ret += ' ' + xp.formatTime(bis);
+  }
 
   return ret;
 }
@@ -1289,21 +1298,21 @@ xp.switchPlanListToSection = function(event) {
   $('#dplanlist').empty();
   for (var k in xp.pads[section.group][section.section]) {
     var plan = xp.pads[section.group][section.section][k];
-    var tr = $('<li/>').appendTo($('#dplanlist'));
+    var tr = $('<tr/>').appendTo($('#dplanlist'));
     tr.click({'group': section.group, 'section': section.section, 'id':plan.id}, xp.onClickPlan);
     if (plan.userEditable == 1) {
       tr.addClass('editablePlan');
     } else {
       tr.addClass('ineditablePlan');
     }
-    $('<div/>').appendTo(tr).text(plan.name);
+    $('<td/>').appendTo(tr).text(plan.name);
     var zeit1 = 'Projekt: ' + xp.formatTimeRange(plan.eventStart, plan.eventEnd);
     var zeit2 = 'Eintragen: ' + xp.formatTimeRange(plan.editStart, plan.editEnd);
-    $('<div/>').appendTo(tr).append($('<span/>').text(zeit1)).append($('<br/>')).append($('<span/>').text(zeit2));
+    $('<td/>').appendTo(tr).append($('<span/>').text(zeit1)).append($('<br/>')).append($('<span/>').text(zeit2));
     if (plan.editPassword == 1) {
-      $('<div/>').appendTo(tr).text('ERFORDERLICH');
+      $('<td/>').appendTo(tr).text('ERFORDERLICH');
     } else {
-      $('<div/>').appendTo(tr).text('OHNE');
+      $('<td/>').appendTo(tr).text('OHNE');
     }
   }
 }
@@ -1331,7 +1340,7 @@ xp.onDeletePlan = function(event) {
   if (confirm ('Soll der Plan '+group+'/'+section+'/'+planId+' '+plan.name+' wirklich entfernt werden?')) {
     $.post('ajax/planmanage.php', {'action':'deletePlan', 'id': planId})
      .success(function (values, textStatus, jqXHR) {
-      $("#tabs").tabs("select", "#planlist");
+      $("#tabs").tabs( "option", "active", 0);
     })
     .error(xp.ajaxErrorHandler);
   }
@@ -1339,12 +1348,15 @@ xp.onDeletePlan = function(event) {
 }
 
 xp.ajaxErrorHandler = function (jqXHR, textStatus, errorThrown) {
-  t = window.open('','fehler');
-  t.document.open('text/plain');
-  t.document.writeln(textStatus);
-  t.document.writeln(errorThrown);
-  t.document.writeln(jqXHR.responseText);
-  t.document.close();
+  var t = window.open('','fehler');
+  var msg = String(textStatus) + '\n' + String(errorThrown) + '\n' + String(jqXHR.responseText);
+  if ( t === null) {
+    alert(msg);
+  } else {
+    t.document.open('text/plain');
+    t.document.writeln(msg);
+    t.document.close();
+  }
 };
 
 xp.onSavePlan = function(event) {
@@ -1460,7 +1472,8 @@ xp.init = function() {
   $('#toolbar').hide();
   $('#admintoolbar').hide();
   $('#usertoolbar').hide();
-  $('#tabs').tabs({show: xp.onTabChange});
+  $('#tabs').tabs({activate: xp.onTabChange});
+  xp.initSelection();
   $( "#save" ).button({
             text: false,
             icons: {
