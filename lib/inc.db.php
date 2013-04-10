@@ -247,7 +247,7 @@ function requirePadAdmin($padId) {
         $_SERVER['PHP_AUTH_PW'] = 'any';
       } else {
         $userStmt = $pdo->prepare("SELECT * FROM ${DB_PREFIX}rel_user_group rug WHERE group_id = ? AND email = ?") or die(print_r($pdo->errorInfo(),true));
-        $userStmt->execute(Array($groupId, $attributes["mail"][0])) or die(print_r($userStmt->errorInfo(),true));
+        $userStmt->execute(Array($padGroup, $attributes["mail"][0])) or die(print_r($userStmt->errorInfo(),true));
         $res = $userStmt->fetchAll(PDO::FETCH_ASSOC);
         if (is_array($res) && count($res) > 0) {
           $_SERVER['PHP_AUTH_USER'] = $attributes["mail"][0];
