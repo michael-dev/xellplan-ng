@@ -25,6 +25,7 @@
       <li><a href="#plan">Plan</a></li>
       <li><a href="#planlog">Plan-Log</a></li>
       <li><a href="#usermgnt">Nutzerverwaltung</a></li>
+      <li><a href="#faq">Hilfe</a></li>
     </ul>
     <div id="planlist" class="tab">
       <fieldset><legend>Plan anzeigen</legend>
@@ -144,8 +145,8 @@
       <ul id="ulplanlog">
        <li class="header">
         <div>Zeit</div>
-	<div>Zelle</div>
-	<div>Helfer</div>
+        <div>Zelle</div>
+        <div>Helfer</div>
        </li>
        <span id="dplanlog">
        </span>
@@ -178,7 +179,20 @@
 	</ul>
        </fieldset>
       </form>
-    </div>
+   </div>
+    <div id="faq" class="tab">
+      <h3>Welche Informationen werden gespeichert?</h2>
+      Jeder Plan ist einer Gruppe zugeordnet, durch welche die Rechte am Plan bestimmt werden, und außerdem innerhalb einer Gruppe nach Bereichen (frei wählbar) gruppiert.
+      Zu jedem Plan werden neben den allgemeinen Angaben sein Inhalt (Zellentexte, Dienste, ...) sowie die Änderung an den Diensten gespeichert.
+      <h3>Wer darf Pläne anlegen/bearbeiten/entfernen?</h3>
+      Pläne anlegen und entfernen darf nur, wer der Gruppe zugeordnet ist. Pläne bearbeiten darf, wer das Administratorpasswortes des Planes kennt (sofern gesetzt) oder der Gruppe zugeordnet ist.
+      <h3>Wer darf Pläne lesen und Dienste übernehmen?</h3>
+      Jeder kann die Pläne einsehen und sich dort eintragen. Ist jedoch ein Nutzerpasswort für den Plan gesetzt, können nur der Gruppe Zugeordnete sowie Inhaber des Kennwortes die eMail-Adressen der Dienste anzeigen sowie Dienste ändern.
+      <h3>Wann gehöre ich zur Gruppe?</h3>
+      Je nach Einstellung des Administrators, kannst du dich entweder durch eine Login-Leiste (oben) und/oder ein Browser-Popupfenster (Helferplan-spezifischer lokaler Nutzer) einloggen. Bei der Login-Leiste übermittelt die Authentifizierungsquelle, zu welchen Gruppen zu gehörst. Außerdem kann der Administrator dich noch weiteren Gruppen zuordnen - dies geht sowohl für die Login-Leiste als auch für lokale Nutzer.
+      <h3>Wie funktionieren die Vorlagen?</h3>
+      Die Vorlagen funktionieren genau wie "normale" Pläne, nur dass die Bereichsangabe leer gelassen wird.
+   </div>
   </div>
   <div>
    Die Seite wird nicht mehr von Google gecrawlt. Telefonnummern tauchen dort also nicht mehr im Index auf. Das hindert natürlich niemanden daran, persönlich auf dieser Seite vorbei zu schauen. Vermeidet also Verlinkungen hierher. Alte Pläne: <a href="https://helfer.stura.tu-ilmenau.de/xellplan">https://helfer.stura.tu-ilmenau.de/xellplan</a>.
