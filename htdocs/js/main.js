@@ -498,6 +498,10 @@ xp.onCancelVariable = function (event) {
 }
 
 xp.onCellClickForAdmin = function(event) {
+  /* save current scroll position */
+  var scrollTop = $(window).scrollTop();
+  var scrollLeft = $(window).scrollLeft();
+  /* ---- */
   if (event.data.col + 1 == xp.numCol) {
     xp.addCells(xp.numCol + 1, xp.numRow);
   }
@@ -506,6 +510,10 @@ xp.onCellClickForAdmin = function(event) {
   }
   xp.addCell(event.data.col,event.data.row,2);
   xp.resizeTable();
+  /* restore current scroll position */
+  $(window).scrollTop(scrollTop);
+  $(window).scrollLeft(scrollLeft);
+  /* ---- */
   event.stopPropagation();
 }
 
