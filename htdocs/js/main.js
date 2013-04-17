@@ -62,9 +62,6 @@ xp.colName = function(i) {
 
 xp.getColWidth = function(col, edit) {
   var w = 0;
-  if (edit) { // firefox 16.0.1: div width := inner width, input width := inner width + padding + border
-    w += 2 * xp.borderWidth + 2 * xp.paddingWidth;
-  }
   if (Object.prototype.hasOwnProperty.call(xp.colWidths,col)) {
     w += parseInt(xp.colWidths[col]);
   } else {
@@ -84,9 +81,6 @@ xp.getColLeft = function(col) {
 
 xp.getRowHeight = function(row,edit) {
   var h = 0;
-  if (edit) { // firefox 16.0.1: div height := inner height, input height := inner height + padding + border
-    h += 2 * xp.borderWidth + 2 * xp.paddingWidth;
-  }
   if (Object.prototype.hasOwnProperty.call(xp.rowHeights,row)) {
     h += parseInt(xp.rowHeights[row]);
   } else {
