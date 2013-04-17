@@ -164,14 +164,14 @@ xp.addCell = function(col, row, editable) {
     cell.text(text);
   }
   if (xp.adminMode) {
-    if (row == -1 && col != -1) {
+    if (row == -1 && col != -1 && editable != 1) {
       cell.resizable();
       cell.resizable( {minHeight: xp.getRowHeight(row,edit),
                        maxHeight: xp.getRowHeight(row,edit)}
                     );
       cell.bind('resizestop',data, xp.onCellResize);
       cell.bind('resize',data, xp.onCellResizeProg);
-    } else if (row != -1 && col == -1) {
+    } else if (row != -1 && col == -1 && editable != 1) {
       cell.resizable( {minWidth: xp.getColWidth(col,edit),
                        maxWidth: xp.getColWidth(col,edit)}
                     );
@@ -757,6 +757,8 @@ xp.getDataSize = function() {
 xp.getCellData = function(col, row, edit) {
   if (row == -1 && col == -1) {
     return '';
+  } else if (((row == -1) || (col == -1)) && edit) {
+    return ' + ';
   } else if (row == -1) {
     return xp.colName(col);
   } else if (col == -1) {
