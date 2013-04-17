@@ -238,8 +238,19 @@ xp.resizeTable = function() {
     $('input.' + colClass).css('width', xp.getColWidth(col, true));
     $('.' + colClass).css('left', xp.getColLeft(col));
   }
-  var totalWidth = xp.getColLeft(xp.numCol);
-  var totalHeight = xp.getRowTop(xp.numRow);
+
+  var rowClass = xp.getRowClass(xp.numRow);
+  $('div.' + rowClass).css('height', xp.getRowHeight(xp.numRow,false));
+  $('input.' + rowClass).css('height', xp.getRowHeight(xp.numRow,true));
+  $('.' + rowClass).css('top', xp.getRowTop(xp.numRow));
+
+  var colClass = xp.getColClass(xp.numCol);
+  $('div.' + colClass).css('width', xp.getColWidth(xp.numCol, false));
+  $('input.' + colClass).css('width', xp.getColWidth(xp.numCol, true));
+  $('.' + colClass).css('left', xp.getColLeft(xp.numCol));
+
+  var totalWidth = xp.getColLeft(xp.numCol+1);
+  var totalHeight = xp.getRowTop(xp.numRow+1);
   $('#'+xp.containerId).css('width', totalWidth);
   $('#'+xp.containerId).css('height', totalHeight);
 }
@@ -502,13 +513,15 @@ xp.onCellClickForAdmin = function(event) {
   var scrollTop = $(window).scrollTop();
   var scrollLeft = $(window).scrollLeft();
   /* ---- */
-  if (event.data.col + 1 == xp.numCol) {
+  if (event.data.col + 1 >= xp.numCol) {
     xp.addCells(xp.numCol + 1, xp.numRow);
   }
-  if (event.data.row + 1 == xp.numRow) {
+  if (event.data.row + 1 >= xp.numRow) {
     xp.addCells(xp.numCol, xp.numRow + 1);
   }
-  xp.addCell(event.data.col,event.data.row,2);
+  if ((event.data.col != -1) && (event.data.row != -1)) {
+    xp.addCell(event.data.col,event.data.row,2);
+  }
   xp.resizeTable();
   /* restore current scroll position */
   $(window).scrollTop(scrollTop);
@@ -582,19 +595,27 @@ xp.addCells = function(numCol, numRow) {
     editable = 0;
   }
   // existing rows: add new columns
+  if (xp.adminMode)
+    xp.destroyCell(xp.numCol, -1, 1); // resize-col-field
   for (var col = xp.numCol; col < numCol; col++) {
     xp.addCell(col, -1);
     for (var row = 0; row < xp.numRow; row++) {
       xp.addCell(col, row, editable);
     }
   }
+  if (xp.adminMode)
+    xp.addCell(numCol, -1, 1); // resize-col-field
   // existing columns: add new rows
+  if (xp.adminMode)
+    xp.destroyCell(-1, xp.numRow, 1); // resize-row-field
   for (var row = xp.numRow; row < numRow; row++) {
     xp.addCell(-1, row);
     for (var col = 0; col < xp.numCol; col++) {
       xp.addCell(col, row, editable);
     }
   }
+  if (xp.adminMode)
+    xp.addCell(-1, numRow, 1); // resize-row-field
   // add lower right corner
   for (var row = xp.numRow; row < numRow; row++) {
     for (var col = xp.numCol; col < numCol; col++) {
