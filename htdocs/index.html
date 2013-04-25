@@ -44,10 +44,10 @@
       </fieldset>
       <fieldset><legend>Neuen Plan anlegen</legend>
       <form action="#">
-        <div><label for="name">Name:</label> <input type="text" id="name" name="name"/></div>
-        <div title="Du musst Gruppenadministrator sein, um Pläne für die Gruppe zu erstellen."><label for="grplist">Gruppe:</label> <select id="grplist3" class="grplist" name="grplist"></select></div>
-        <div title="Der Bereich ist frei wählbar und zur Gruppierung der Pläne einer Gruppe da. Wird kein Bereich angegeben, wird eine Vorlage erstellt."><label for="section">Bereich:</label> <input type="text" id="section2" name="section"/></div>
-        <div><label for="tpllist">Vorlage:</label> <select id="tpllist" class="tpllist" name="tpllist"></select></div>
+        <div style="position: relative;"><label for="name">Name:</label> <input type="text" id="name" name="name" placeholder="Name des neuen Planes"/></div>
+        <div style="position: relative;"><label for="grplist">Gruppe:</label> <select id="grplist3" class="grplist" name="grplist"></select><span class="info">Du musst Gruppenadministrator sein, um Pläne für die Gruppe zu erstellen.</span></div>
+        <div style="position: relative;"><label for="section">Bereich:</label> <input type="text" id="section2" name="section" placeholder="Vorlagen"/><span class="info">Der Bereich ist frei wählbar und zur Gruppierung der Pläne einer Gruppe da. Wird kein Bereich angegeben, wird eine Vorlage erstellt.</span></div>
+        <div style="position: relative;"><label for="tpllist">Vorlage:</label> <select id="tpllist" class="tpllist" name="tpllist"></select><span class="info">Der Inhalt der Vorlage wird automatisch in den neuen Plan kopiert.</span></div>
         <div><button id="plan_create">Anlegen</button></div>
       </form>
       </fieldset>
