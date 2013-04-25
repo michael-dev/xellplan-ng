@@ -23,6 +23,7 @@ xp.firstRun = true;
 xp.log = {};
 xp.login = null;
 xp.loginTimer = null;
+xp.orgs = [];
 
 if (! Array.prototype.clone ) {
   Array.prototype.clone = function() {
@@ -389,6 +390,15 @@ xp.configureToolbar = function(col,row) {
   $( "#save" ).click({'col': col, 'row':row}, xp.onCellConfirm);
 }
 
+xp.configureOrgs = function() {
+  $('#orgList').empty();
+  for (k in xp.orgs) {
+    if (!Object.prototype.hasOwnProperty.call(xp.orgs, k)) continue;
+    var text = xp.orgs[k];
+	  $('<button onClick="$(\'#var_organization\').val(unescape(\''+escape(text)+'\'));"></button>').text(text).appendTo($('#orgList'));
+  }
+}
+
 xp.onDisplayVariable = function(event) {
   event.stopPropagation();
   $( "#userdialogpw").dialog("close");
@@ -433,6 +443,7 @@ xp.onCellClickForUser = function(event) {
   var section = xp.currentPlanId.section;
   var plan = xp.pads[group][section][planId];
 
+  xp.configureOrgs();
   if ((plan.editPassword == 1) && !(xp.ass[row] && xp.ass[row][col] && Object.prototype.hasOwnProperty.call(xp.ass[row][col], 'email'))) {
     $( "#userdialogpw").dialog("open");
     $( "#userdialogpw").dialog("widget").position({
@@ -1525,6 +1536,7 @@ xp.setLoginStatus = function() {
   $.post('ajax/login.php', {url: self.location.href})
    .success(function (values, textStatus, jqXHR) {
     xp.login = values;
+    xp.orgs = values.orgs;
     if (xp.login.loginMode != "basic") {
       $('.login').show();
       if (xp.login.isAuth) {
