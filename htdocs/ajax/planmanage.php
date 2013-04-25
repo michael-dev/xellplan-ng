@@ -95,8 +95,56 @@ switch ($_REQUEST["action"]):
      $padDataStmt->execute(Array(implode(",",$_REQUEST["classes"]), $_REQUEST["id"], $_REQUEST["row"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
    }
  break;
+ case "addrow":
+   requirePadAdmin($_REQUEST["id"]);
+   $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_data SET row = row + 1 WHERE pad_id = ? AND row >= ? ORDER BY row DESC") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"])) or httperror($padDataStmt->errorInfo());
+   $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_assistant SET row = row + 1 WHERE pad_id = ? AND row >= ? ORDER BY row DESC") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"])) or httperror($padDataStmt->errorInfo());
+   $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_width SET idx = idx + 1 WHERE pad_id = ? AND idx >= ? AND type = 'row' ORDER BY idx DESC") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"])) or httperror($padDataStmt->errorInfo());
+ break;
+ case "addcol":
+   requirePadAdmin($_REQUEST["id"]);
+   $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_data SET col = col + 1 WHERE pad_id = ? AND col >= ? ORDER BY col DESC") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
+   $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_assistant SET col = col + 1 WHERE pad_id = ? AND col >= ? ORDER BY col DESC") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
+   $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_width SET idx = idx + 1 WHERE pad_id = ? AND idx >= ? AND type = 'col' ORDER BY idx DESC") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
+ break;
+ case "delrow":
+   requirePadAdmin($_REQUEST["id"]);
+   $padDataStmt = $pdo->prepare("DELETE FROM ${DB_PREFIX}pad_data WHERE pad_id = ? AND row = ?") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"])) or httperror($padDataStmt->errorInfo());
+   $padDataStmt = $pdo->prepare("DELETE FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ? AND row = ?") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"])) or httperror($padDataStmt->errorInfo());
+   $padDataStmt = $pdo->prepare("DELETE FROM ${DB_PREFIX}pad_width WHERE pad_id = ? AND idx = ? AND type = 'row'") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"])) or httperror($padDataStmt->errorInfo());
+   $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_data SET row = row - 1 WHERE pad_id = ? AND row > ?") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"])) or httperror($padDataStmt->errorInfo());
+   $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_assistant SET row = row - 1 WHERE pad_id = ? AND row > ?") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"])) or httperror($padDataStmt->errorInfo());
+   $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_width SET idx = idx - 1 WHERE pad_id = ? AND idx > ? AND type = 'row'") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["row"])) or httperror($padDataStmt->errorInfo());
+ break;
+ case "delcol":
+   requirePadAdmin($_REQUEST["id"]);
+   $padDataStmt = $pdo->prepare("DELETE FROM ${DB_PREFIX}pad_data WHERE pad_id = ? AND col = ?") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
+   $padDataStmt = $pdo->prepare("DELETE FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ? AND col = ?") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
+   $padDataStmt = $pdo->prepare("DELETE FROM ${DB_PREFIX}pad_width WHERE pad_id = ? AND idx = ? AND type = 'col'") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
+   $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_data SET col = col - 1 WHERE pad_id = ? AND col > ?") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
+   $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_assistant SET col = col - 1 WHERE pad_id = ? AND col > ?") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
+   $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_width SET idx = idx - 1 WHERE pad_id = ? AND idx > ? AND type = 'col'") or httperror($pdo->errorInfo());
+   $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
+ break;
  default:
-   httperror("invalid action");
+   httperror("invalid action: ".htmlspecialchars($_REQUEST["action"]));
  break;
 endswitch;
 

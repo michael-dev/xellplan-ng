@@ -125,7 +125,7 @@ xp.getCellId = function(col, row, edit) {
 /**
  * editable:
  *   - 0: no edit
- *   - 1: editable
+ *   - 1: editable (i.e. text field or resizable column/row header)
  *   - 2: input filed
  * row = -1 -> headline
  */
@@ -163,21 +163,34 @@ xp.addCell = function(col, row, editable) {
   } else {
     cell.text(text);
   }
-  if (xp.adminMode) {
-    if (row == -1 && col != -1 && editable != 1) {
-      cell.resizable();
+  if (xp.adminMode && editable != 1 && (row == -1 || col == -1) && (row != -1 || col != -1)) {
+    cell.resizable();
+    cell.bind('resizestop',data, xp.onCellResize);
+    cell.bind('resize',data, xp.onCellResizeProg);
+    if (row == -1) {
       cell.resizable( {minHeight: xp.getRowHeight(row,edit),
                        maxHeight: xp.getRowHeight(row,edit)}
                     );
-      cell.bind('resizestop',data, xp.onCellResize);
-      cell.bind('resize',data, xp.onCellResizeProg);
-    } else if (row != -1 && col == -1 && editable != 1) {
+      var items = {
+          "addcol": {name: "Neue Spalte vor Spalte " + text + " einfügen" , icon: null},
+          "delcol": {name: "Spalte " + text + " löschen", icon: null}
+      };
+    } else {
       cell.resizable( {minWidth: xp.getColWidth(col,edit),
                        maxWidth: xp.getColWidth(col,edit)}
                     );
-      cell.bind('resizestop', data, xp.onCellResize);
-      cell.bind('resize', data, xp.onCellResizeProg);
+      var items = {
+          "addrow": {name: "Neue Zeile vor Zeile " + text + " einfügen" , icon: null},
+          "delrow": {name: "Zeile " + text + " löschen", icon: null}
+      };
     }
+    $.contextMenu({
+      selector: '#'+cellId,
+      zIndex: 100, /* place over resizable icon */
+      data: {'row': row, 'col' : col},
+      callback: xp.onContextMenuClick,
+      items: items
+    });
   }
   if (row != -1 && col != -1 && xp.userCanEditField(col, row) && (editable == 0)) {
     cell.click(data, xp.onCellClickForUser);
@@ -186,6 +199,22 @@ xp.addCell = function(col, row, editable) {
   if (edit) {
     cell.focus();
   }
+}
+
+xp.onContextMenuClick = function(key, options) {
+  var row = options.data.row;
+  var col = options.data.col;
+  var text = xp.getCellData(col, row, false);
+  if (xp.currentFocus != null) {
+    xp.onCellConfirmHandler(xp.currentFocus.col, xp.currentFocus.row, true, true);
+  }
+  /* tell server */
+  var data = {};
+  data.action = key;
+  data.id = xp.currentPlanId.id;
+  data.col = col;
+  data.row = row;
+  $.post('ajax/planmanage.php', data).error(xp.ajaxErrorHandler).success(function(res) { xp.switchToPlan(xp.currentPlanId); } );
 }
 
 // per-pixel resize
@@ -205,20 +234,26 @@ xp.onCellResizeProg = function(event, ui) {
 
 // on stop: round width to multiple of defColRound, defRowRound
 xp.onCellResize = function(event, ui) {
+  if (event.data.row == -1 && event.data.col != -1) {
+    xp.colWidths[event.data.col] = xp.defColRound * Math.round(ui.size.width / xp.defColRound);
+  } else if (event.data.row != -1 && event.data.col == -1) {
+    xp.rowHeights[event.data.row] = xp.defRowRound * Math.round(ui.size.height / xp.defRowRound);
+  }
+  xp.onCellResizeSave(event.data.row, event.data.col);
+  xp.resizeTable();
+}
+
+xp.onCellResizeSave = function(row, col) {
   var data = {};
   data.action = 'setWidth';
   data.id = xp.currentPlanId.id;
-  if (event.data.row == -1 && event.data.col != -1) {
-    xp.colWidths[event.data.col] = xp.defColRound * Math.round(ui.size.width / xp.defColRound);
-    xp.resizeTable();
-    data.width = xp.colWidths[event.data.col];
-    data.idx = event.data.col;
+  if (row == -1 && col != -1) {
+    data.width = xp.colWidths[col];
+    data.idx = col;
     data.type = 'col';
-  } else if (event.data.row != -1 && event.data.col == -1) {
-    xp.rowHeights[event.data.row] = xp.defRowRound * Math.round(ui.size.height / xp.defRowRound);
-    xp.resizeTable();
-    data.width = xp.rowHeights[event.data.row];
-    data.idx = event.data.row;
+  } else if (row != -1 && col == -1) {
+    data.width = xp.rowHeights[row];
+    data.idx = row;
     data.type = 'row';
   }
   $.post('ajax/planmanage.php', data)
@@ -423,6 +458,9 @@ xp.onCellClickForUser = function(event) {
     $('#var_name').val('');
     $('#var_organization').val('');
     $('#var_mail').val('');
+    if (xp.login.email) {
+      $('#var_mail').val(xp.login.email);
+    }
   }
 
   if (plan.editPassword == 1) {
@@ -546,13 +584,13 @@ xp.onCellConfirm = function(event) {
   return false;
 }
 
-xp.onCellConfirmHandler = function(col, row, cfrm) {
+xp.onCellConfirmHandler = function(col, row, cfrm, sync) {
   var text = xp.destroyCell(col, row, true);
   xp.currentFocus = null;
   $('#toolbar').css('visibility','hidden');
   if (cfrm) {
     xp.updateCell(col, row, text, false);
-    xp.saveCell(col, row);
+    xp.saveCell(col, row, sync);
   }
 }
 
@@ -581,6 +619,7 @@ xp.destroyCell = function(col, row, edit) {
 xp.clearTable = function() {
   var container = $('#' + xp.containerId);
   container.empty();
+  $.contextMenu( 'destroy' );
 }
 
 xp.addCells = function(numCol, numRow) {
@@ -640,6 +679,7 @@ xp.initLog = function() {
   $('#logtoolbar_name').text(plan.name);
   $('#dplanlog').empty();
   for (var k in xp.log) {
+    if (!xp.log.hasOwnProperty(k)) { continue; }
     var log = xp.log[k];
     var tr = $('<li/>').appendTo($('#dplanlog'));
     $('<div/>').appendTo(tr).text(log.eventTime);
@@ -693,7 +733,7 @@ xp.setCellData = function(col, row, text) {
   }
 }
 
-xp.saveCell = function(col, row) {
+xp.saveCell = function(col, row, sync) {
   var data = {};
   data.action = 'setCell';
   data.id = xp.currentPlanId.id;
@@ -716,7 +756,12 @@ xp.saveCell = function(col, row) {
   $('#'+cellId1).addClass('saveInProgress');
   $('#'+cellId2).addClass('saveInProgress');
 
-  $.post('ajax/planmanage.php', data)
+  $.ajax({
+    type: 'POST',
+    url: 'ajax/planmanage.php',
+    data: data,
+    async: (sync ? false : true)
+  })
    .success(function (values, status, req) {
      $('#'+cellId1).removeClass('saveInProgress');
      $('#'+cellId2).removeClass('saveInProgress');
@@ -742,10 +787,12 @@ xp.getDataSize = function() {
   var numCol = 10;
   // row,col starts counting with 0
   for (var row in xp.data) {
+    if (!xp.data.hasOwnProperty(row)) { continue; }
     if (numRow < parseInt(row) + 1) {
       numRow = parseInt(row) + 1;
     }
     for (var col in xp.data[row]) {
+      if (!xp.data[row].hasOwnProperty(col)) { continue; }
       if (numCol < parseInt(col) + 1) {
         numCol = parseInt(col) + 1;
       }
@@ -837,9 +884,11 @@ xp.refreshUserGroupListHandler = function(values) {
   xp.groups = values.groups;
   $( '#userlist').append($('<option>', {value: '', text: 'neu'}));
   for (k in values.users) {
+    if (!values.users.hasOwnProperty(k)) { continue; }
     $( '#userlist').append($('<option>', {value: k, text: k}));
   }
   for (k in values.groups) {
+    if (!values.groups.hasOwnProperty(k)) { continue; }
     $( '.grplist').append($('<option>', {value: k, text: k}));
   }
   xp.onSelectUser();
@@ -858,6 +907,7 @@ xp.onSelectUser = function() {
     $('#user_password').val(xp.users[currentUser].password);
     $('#user_admin').attr('checked', xp.users[currentUser].admin == 1);
     for (k in xp.users[currentUser].groups) {
+      if (!xp.users[currentUser].groups.hasOwnProperty(k)) { continue; }
       var v = xp.users[currentUser].groups[k];
       $('#usrgrplist').append($('<option>', {value: v, text: v}));
     }
@@ -1022,6 +1072,7 @@ xp.onSelectGroup = function() {
     return false;
   }
   for (var k in xp.groups[currentGroup].members) {
+    if (!xp.groups[currentGroup].members.hasOwnProperty(k)) { continue; }
     var v = xp.groups[currentGroup].members[k];
     if (k != 'clone') {
       $('#grpadm').append($('<li>', {text: v}));
@@ -1044,12 +1095,14 @@ xp.initSelection = function() {
      var alreadySelected = false;
 
      for (var group in values) {
+       if (!values.hasOwnProperty(group)) { continue; }
        $( '#grplist3').append($('<option>', {value: group, text: group}));
        if (Object.keys(values[group]['']).length > 0) {
          // group has templates
          $( '#grplist4').append($('<option>', {value: group, text: group}));
          var grpObj = $('<optgroup/>', {label: group}).appendTo($('#tpllist'));
          for (var pad in values[group]['']) {
+           if (!values[group][''].hasOwnProperty(pad)) { continue; }
            $('<option/>', {value: pad, text: values[group][''][pad]['name']}).appendTo(grpObj);
          }
        }
@@ -1057,21 +1110,21 @@ xp.initSelection = function() {
          // group has non-template sections
          var grpObj = $('<optgroup/>', {label: group}).appendTo($('#section'));
          for (var section in values[group]) {
-           if (section != '') {
-             var opt = $('<option/>', {value: JSON.stringify({'group':group, 'section':section}), text: section}).appendTo(grpObj);
-             /* find editable plan */
-             for (var k in values[group][section]) {
-               var plan = values[group][section][k];
-               if (plan.userEditable == 1 && !alreadySelected) {
-                 opt.attr('selected','selected');
-                 alreadySelected = true;
-               }
+           if (!values[group].hasOwnProperty(section)) { continue; }
+           if (section == '') { continue; }
+           var opt = $('<option/>', {value: JSON.stringify({'group':group, 'section':section}), text: section}).appendTo(grpObj);
+           /* find editable plan */
+           for (var k in values[group][section]) {
+             var plan = values[group][section][k];
+             if (plan.userEditable == 1 && !alreadySelected) {
+               opt.attr('selected','selected');
+               alreadySelected = true;
              }
-             /* query string jump */
-             if (xp.firstRun && qs["planId"] && Object.prototype.hasOwnProperty.call(values[group][section], qs["planId"])) {
-               qs["group"] = group;
-               qs["section"] = section;
-             }
+           }
+           /* query string jump */
+           if (xp.firstRun && qs["planId"] && Object.prototype.hasOwnProperty.call(values[group][section], qs["planId"])) {
+             qs["group"] = group;
+             qs["section"] = section;
            }
          }
        }
@@ -1148,6 +1201,7 @@ xp.switchToPlan = function(data) {
      xp.numRow = size[1];
      xp.configureUserToolbar();
      xp.configureAdminToolbar();
+     xp.initTable();
      $("#tabs").tabs( "option", "active", 1);
     })
    .error(xp.ajaxErrorHandler);
