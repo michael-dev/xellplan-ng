@@ -42,7 +42,7 @@
        </tbody>
       </table>
       </fieldset>
-      <fieldset><legend>Neuen Plan anlegen</legend>
+      <fieldset id="newplanset"><legend>Neuen Plan anlegen</legend>
       <form action="#">
         <div style="position: relative;"><label for="name">Name:</label> <input type="text" id="name" name="name" placeholder="Name des neuen Planes"/></div>
         <div style="position: relative;"><label for="grplist">Gruppe:</label> <select id="grplist3" class="grplist" name="grplist"></select><span class="info">Du musst Gruppenadministrator sein, um Pläne für die Gruppe zu erstellen.</span></div>
@@ -69,24 +69,24 @@
 	<div id="usertoolbar_comment"></div>
       </span>
       <span id="admintoolbar" class="ui-widget-header ui-corner-all">
-        <button id="totemplate">Vorlage erstellen</button>
+        <button id="totemplate" title="Neue Vorlage aus dem aktuellen Plan erstellen.">Neue Vorlage erstellen</button>
         <button id="deleteplan">Plan löschen</button>
         <button id="saveplan">Meta-Daten speichern</button>
 	<fieldset><legend>Meta-Daten</legend>
         <div><label for="group_id">Gruppe</label>: <span id="admintoolbar_group_id"></span></div>
-        <div><label for="section_id">Bereich</label>: <input type="text" id="admintoolbar_section_id" name="section_id"/></div>
+        <div><label for="section_id">Bereich</label>: <input type="text" id="admintoolbar_section_id" name="section_id" placeholder="Vorlage"/></div>
         <div><label for="id">Nr</label>: <span id="admintoolbar_id"></span></div>
-        <div><label for="name">Name</label>: <input type="text" id="admintoolbar_name" name="name"/></div>
+        <div><label for="name">Name</label>: <input type="text" id="admintoolbar_name" name="name" placeholder="Name"/></div>
 	<hr/>
         <div><label for="comment">Kommentar</label>: <textarea type="text" id="admintoolbar_comment" name="comment"></textarea></div>
-        <div><label for="eventStart">Event-Start</label>: <input type="text" id="admintoolbar_eventStart" name="eventStart"/></div>
-        <div><label for="eventEnd">Event-End</label>: <input type="text" id="admintoolbar_eventEnd" name="eventEnd"/></div>
-        <div><label for="editStart">Bearbeiten ab</label>: <input type="text" id="admintoolbar_editStart" name="editStart"/></div>
-        <div><label for="editEnd">Bearbeiten bis</label>: <input type="text" id="admintoolbar_editEnd" name="editEnd"/></div>
+        <div style="position:relative;"><label for="eventStart">Event-Start</label>: <input type="text" id="admintoolbar_eventStart" name="eventStart" placeholder="Veranstaltungsbeginn"/> <span class="info">Diese Angabe wird zur Sortierung der Pläne verwendet.</span></div>
+        <div style="position:relative;"><label for="eventEnd">Event-End</label>: <input type="text" id="admintoolbar_eventEnd" name="eventEnd" placeholder="Veranstaltungsende"/> <span class="info">Diese Angabe wird zur Sortierung der Pläne verwendet.</span></div>
+        <div style="position:relative;"><label for="editStart">Bearbeiten ab</label>: <input type="text" id="admintoolbar_editStart" name="editStart" placeholder="Dienste übernehmen ab"/> <span class="info">In diesem Zeitraum können Dienste übernommen werden. Dazu darf das Feld nicht leer bleiben.</span></div>
+        <div style="position:relative;"><label for="editEnd">Bearbeiten bis</label>: <input type="text" id="admintoolbar_editEnd" name="editEnd" placeholder="Dienste übernehmen bis"/>  <span class="info">In diesem Zeitraum können Dienste übernommen werden. Dazu darf das Feld nicht leer bleiben.</span></div>
         <div><label for="creator">Angelegt von</label>: <span id="admintoolbar_creator"></span></div>
-        <div><label for="contact">Kontakt</label>: <input type="text" id="admintoolbar_contact" name="contact"/></div>
-        <div><label for="editPassword">Passwort für Nutzer</label>: <input type="text" id="admintoolbar_editPassword" name="editPassword"/></div>
-        <div><label for="adminPassword">Passwort für Admins</label>: <input type="text" id="admintoolbar_adminPassword" name="adminPassword"/></div>
+        <div><label for="contact">Kontakt</label>: <input type="text" id="admintoolbar_contact" name="contact" placeholder="Kontakt"/></div>
+        <div><label for="editPassword">Passwort für Nutzer</label>: <input type="text" id="admintoolbar_editPassword" name="editPassword" placeholder="Passwort für Dienste"/></div>
+        <div><label for="adminPassword">Passwort für Admins</label>: <input type="text" id="admintoolbar_adminPassword" name="adminPassword" placeholder="Passwort für zusätzliche Admins"/></div>
 	</fieldset>
       </span>
       <span id="toolbar" class="ui-widget-header ui-corner-all">

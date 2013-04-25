@@ -41,5 +41,5 @@ div.tab { position: relative; }
 .editablePlan { }
 .ineditablePlan { background-color: #E0E0E0; }
 .info { display: inline-block; position: absolute; left: 300px; top: 30px; border: thin solid black; font-size: small; background-color: yellow; padding: 2px; max-width: 260px; visibility:hidden; z-index: 100; }
-input, select { min-width: 300px; }
+#admintoolbar input, #admintoolbar select, #newplanset input, #newplanset select { min-width: 300px; }
 div:hover > .info { visibility: visible; }
