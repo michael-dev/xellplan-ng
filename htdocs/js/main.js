@@ -1035,6 +1035,7 @@ xp.initSelection = function() {
    .success(function (values, status, req) {
      xp.pads = values;
      $('#section').empty();
+     $('#sectiongroup').text('');
      $('#grplist3').empty();
      $('#grplist4').empty();
      $('#tpllist').empty();
@@ -1313,6 +1314,7 @@ xp.switchPlanListToSection = function(event) {
     event.stopPropagation();
   }
   var section = $('#section').val();
+  $('#sectiongroup').text('');
   if (section == '') {
     return false;
   }
@@ -1320,6 +1322,7 @@ xp.switchPlanListToSection = function(event) {
   if (section == null) {
     return;
   }
+  $('#sectiongroup').text(section.group);
   $('#dplanlist').empty();
   for (var k in xp.pads[section.group][section.section]) {
     var plan = xp.pads[section.group][section.section][k];
