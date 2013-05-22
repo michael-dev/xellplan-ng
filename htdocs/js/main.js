@@ -1590,10 +1590,10 @@ xp.init = function() {
   $( "#section" ).change(xp.switchPlanListToSection);
   $( "#grplist4" ).change(xp.switchTplListToSection);
   $( "#toadmin" ).button().change(xp.onChangeAdminMode);
-  $('#admintoolbar_eventStart').datetimepicker({'dateFormat': 'yy-mm-dd', 'timeFormat': 'hh:mm:ss'});
-  $('#admintoolbar_eventEnd').datetimepicker({'dateFormat': 'yy-mm-dd', 'timeFormat': 'hh:mm:ss'});
-  $('#admintoolbar_editStart').datetimepicker({'dateFormat': 'yy-mm-dd', 'timeFormat': 'hh:mm:ss'});
-  $('#admintoolbar_editEnd').datetimepicker({'dateFormat': 'yy-mm-dd', 'timeFormat': 'hh:mm:ss'});
+  $('#admintoolbar_eventStart').datetimepicker({'dateFormat': 'yy-mm-dd', 'timeFormat': 'HH:mm:ss'});
+  $('#admintoolbar_eventEnd').datetimepicker({'dateFormat': 'yy-mm-dd', 'timeFormat': 'HH:mm:ss'});
+  $('#admintoolbar_editStart').datetimepicker({'dateFormat': 'yy-mm-dd', 'timeFormat': 'HH:mm:ss'});
+  $('#admintoolbar_editEnd').datetimepicker({'dateFormat': 'yy-mm-dd', 'timeFormat': 'HH:mm:ss'});
   $( "#deleteplan" ).button().click(xp.onDeletePlan);
   $( "#saveplan" ).button().click(xp.onSavePlan);
   $( "#totemplate" ).button().click(xp.onNewTemplate);
