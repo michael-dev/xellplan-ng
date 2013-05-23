@@ -1098,6 +1098,7 @@ xp.initSelection = function() {
      xp.pads = values;
      $('#section').empty();
      $('#sectiongroup').text('');
+     $('#sectionlink').hide();
      $('#grplist3').empty();
      $('#grplist4').empty();
      $('#tpllist').empty();
@@ -1124,10 +1125,13 @@ xp.initSelection = function() {
            if (!values[group].hasOwnProperty(section)) { continue; }
            if (section == '') { continue; }
            var opt = $('<option/>', {value: JSON.stringify({'group':group, 'section':section}), text: section}).appendTo(grpObj);
+           if (qs['section'] && qs['group'] && unescape(qs['section']) == section && unescape(qs['group']) == group) {
+               opt.attr('selected','selected');
+           }
            /* find editable plan */
            for (var k in values[group][section]) {
              var plan = values[group][section][k];
-             if (plan.userEditable == 1 && !alreadySelected) {
+             if (plan.userEditable == 1 && !alreadySelected && !(qs['section'] && qs['group'])) {
                opt.attr('selected','selected');
                alreadySelected = true;
              }
@@ -1388,6 +1392,7 @@ xp.switchPlanListToSection = function(event) {
   }
   var section = $('#section').val();
   $('#sectiongroup').text('');
+  $('#sectionlink').hide();
   if (section == '') {
     return false;
   }
@@ -1396,6 +1401,8 @@ xp.switchPlanListToSection = function(event) {
     return;
   }
   $('#sectiongroup').text(section.group);
+  $('#sectionlink').attr('href','?section='+escape(section.section)+'&group='+escape(section.group));
+  $('#sectionlink').show();
   $('#dplanlist').empty();
   for (var k in xp.pads[section.group][section.section]) {
     var plan = xp.pads[section.group][section.section][k];
