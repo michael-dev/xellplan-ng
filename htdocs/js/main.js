@@ -1231,6 +1231,12 @@ xp.configureUserToolbar = function() {
   $('#usertoolbar_comment').text(plan.comment);
   $('#footer_editStart').text(plan.editStart);
   $('#footer_editEnd').text(plan.editEnd);
+  $('#var_subscribeHint').text(plan.subscribeHint);
+  var contactHint = plan.contactHint;
+  if (contactHint && contactHint.length > 0) {
+    contactHint = '('+contactHint+')';
+  }
+  $('#var_contactHint').text(contactHint);
   var contact = plan.contact;
   if (contact == '' || !contact) {
     contact = plan.creator;
@@ -1298,6 +1304,8 @@ xp.configureAdminToolbar = function() {
   $('#admintoolbar_editEnd').val(plan.editEnd);
   $('#admintoolbar_creator').text(plan.creator);
   $('#admintoolbar_contact').val(plan.contact);
+  $('#admintoolbar_contactHint').val(plan.contactHint);
+  $('#admintoolbar_subscribeHint').val(plan.subscribeHint);
   if (plan.editPassword == 1) {
     $('#admintoolbar_editPassword').val('**gesetzt**');
   } else {
@@ -1465,6 +1473,8 @@ xp.onSavePlan = function(event) {
   data.editStart = $('#admintoolbar_editStart').val();
   data.editEnd = $('#admintoolbar_editEnd').val();
   data.contact = $('#admintoolbar_contact').val();
+  data.contactHint = $('#admintoolbar_contactHint').val();
+  data.subscribeHint = $('#admintoolbar_subscribeHint').val();
   data.editPassword = $('#admintoolbar_editPassword').val();
   data.adminPassword = $('#admintoolbar_adminPassword').val();
 

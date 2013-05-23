@@ -68,28 +68,30 @@
         von: <span id="usertoolbar_from"></span>
         bis: <span id="usertoolbar_to"></span>
         <input type="checkbox" id="toadmin" value='admin'/><label for="toadmin">Administration</label><br/>
-	<div id="usertoolbar_comment"></div>
+        <div id="usertoolbar_comment"></div>
       </span>
       <span id="admintoolbar" class="ui-widget-header ui-corner-all">
         <button id="totemplate" title="Neue Vorlage aus dem aktuellen Plan erstellen.">Neue Vorlage erstellen</button>
         <button id="deleteplan">Plan löschen</button>
         <button id="saveplan">Meta-Daten speichern</button>
-	<fieldset><legend>Meta-Daten</legend>
+        <fieldset><legend>Meta-Daten</legend>
         <div><label for="group_id">Gruppe</label>: <span id="admintoolbar_group_id"></span></div>
         <div><label for="section_id">Bereich</label>: <input type="text" id="admintoolbar_section_id" name="section_id" placeholder="Vorlage"/></div>
         <div><label for="id">Nr</label>: <span id="admintoolbar_id"></span></div>
         <div><label for="name">Name</label>: <input type="text" id="admintoolbar_name" name="name" placeholder="Name"/></div>
-	<hr/>
+        <hr/>
         <div><label for="comment">Kommentar</label>: <textarea type="text" id="admintoolbar_comment" name="comment"></textarea></div>
         <div style="position:relative;"><label for="eventStart">Event-Start</label>: <input type="text" id="admintoolbar_eventStart" name="eventStart" placeholder="Veranstaltungsbeginn"/> <span class="info">Diese Angabe wird zur Sortierung der Pläne verwendet.</span></div>
         <div style="position:relative;"><label for="eventEnd">Event-End</label>: <input type="text" id="admintoolbar_eventEnd" name="eventEnd" placeholder="Veranstaltungsende"/> <span class="info">Diese Angabe wird zur Sortierung der Pläne verwendet.</span></div>
         <div style="position:relative;"><label for="editStart">Bearbeiten ab</label>: <input type="text" id="admintoolbar_editStart" name="editStart" placeholder="Dienste übernehmen ab"/> <span class="info">In diesem Zeitraum können Dienste übernommen werden. Dazu darf das Feld nicht leer bleiben.</span></div>
         <div style="position:relative;"><label for="editEnd">Bearbeiten bis</label>: <input type="text" id="admintoolbar_editEnd" name="editEnd" placeholder="Dienste übernehmen bis"/>  <span class="info">In diesem Zeitraum können Dienste übernommen werden. Dazu darf das Feld nicht leer bleiben.</span></div>
         <div><label for="creator">Angelegt von</label>: <span id="admintoolbar_creator"></span></div>
-        <div><label for="contact">Kontakt</label>: <input type="text" id="admintoolbar_contact" name="contact" placeholder="Kontakt"/></div>
+        <div style="position:relative;"><label for="contact">Kontakt</label>: <input type="text" id="admintoolbar_contact" name="contact" placeholder="Kontakt"/><span class="info">Diese eMail-Adresse wird als Ansprechpartner für den Plan angezeigt.</span></div>
+        <div style="position:relative;"><label for="contactHint">Kontakt von Diensten</label>: <input type="text" id="admintoolbar_contactHint" name="contactHint" placeholder="Kontaktinformation, welche Dienste hinterlegen sollen."/><span class="info">Dieser Text wird beim Eintragen von Diensten angezeigt.</span></div>
+        <div style="position:relative;"><label for="subscribeHint">Dienstehinweis</label>: <textarea type="text" id="admintoolbar_subscribeHint" name="subscribeHint"></textarea><span class="info">Dieser Text wird beim Eintragen von Diensten angezeigt.</span></div>
         <div><label for="editPassword">Passwort für Nutzer</label>: <input type="text" id="admintoolbar_editPassword" name="editPassword" placeholder="Passwort für Dienste"/></div>
         <div><label for="adminPassword">Passwort für Admins</label>: <input type="text" id="admintoolbar_adminPassword" name="adminPassword" placeholder="Passwort für zusätzliche Admins"/></div>
-	</fieldset>
+        </fieldset>
       </span>
       <span id="toolbar" class="ui-widget-header ui-corner-all">
         <button title="Speichern" id="save">save</button>
@@ -105,7 +107,7 @@
           <input type="radio" id="fontsize2" name="fontsize" value='bigFontsize'/><label for="fontsize2" title='große Schriftgröße'>+1</label>
         </span>
 
-	<span>Änderungen nicht speichern = Escape-Taste nutzen</span>
+        <span>Änderungen nicht speichern = Escape-Taste nutzen</span>
       </span>
      </form>
      <div id="content">
@@ -119,14 +121,15 @@
      </div>
      <div id="userdialog" title="Dienst übernehmen">
         Zum Nicht-belegen des Dienstes bitte Name und eMail-Feld leer lassen.
+        <div id="var_subscribeHint"></div>
         <div><label for="name">Name:</label> <input id="var_name" name="name" type="text"/></div>
         <div>
-	  <label for="organization">Organisation:</label>
-	  <input id="var_organization" name="organization" type="text"/>
-    <span id="orgList">
-    </span>
-	</div>
-        <div><label for="mail">e-Mail:</label> <input id="var_mail" name="mail" type="text"/> (oder Handynummer)</div>
+          <label for="organization">Organisation:</label>
+          <input id="var_organization" name="organization" type="text"/>
+          <span id="orgList">
+          </span>
+        </div>
+        <div><label for="mail">Kontakt:</label> <input id="var_mail" name="mail" type="text"/> <span id="var_contactHint"></span></div>
         <div class="var_password"><label for="password">Passwort:</label> <input id="var_password" name="password" type="password"/></div>
         <div class="var_captcha"><img id="captcha" width="215">Captcha: <input id="var_captcha" name="captcha" type="text"/><br/> <a href="#" id="refreshcaptcha">Bild wechseln</a></div>
         <div id="postcaptcha"><button id="var_save">Speichern</button> <button id="var_cancel">Abbrechen</button></div>
@@ -171,10 +174,10 @@
        </fieldset>
        <fieldset><legend>Gruppen</legend>
         <div><select id="grplist" class="grplist" name="grplist"></select><button id="grp_delete">Löschen</button></div>
-	<div><input id="grp" type="text" name="grp"/><button id="grp_insert">Anlegen</button></div>
-	Administratoren:
-	<ul id="grpadm">
-	</ul>
+        <div><input id="grp" type="text" name="grp"/><button id="grp_insert">Anlegen</button></div>
+        Administratoren:
+        <ul id="grpadm">
+        </ul>
        </fieldset>
       </form>
    </div>

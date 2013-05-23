@@ -29,6 +29,16 @@ if ($r === false) {
                                                   PRIMARY KEY (id) );") or die(print_r($pdo->errorInfo(),true));
 }
 
+/** add columns subscribeHint, contactHint */
+$r = $pdo->query("SELECT COUNT(subscribeHint) FROM ${DB_PREFIX}pads");
+if ($r === false) {
+  $pdo->query("ALTER TABLE ${DB_PREFIX}pads ADD (subscribeHint TEXT DEFAULT '' NOT NULL);") or die(print_r($pdo->errorInfo(),true));
+}
+$r = $pdo->query("SELECT COUNT(contactHint) FROM ${DB_PREFIX}pads");
+if ($r === false) {
+  $pdo->query("ALTER TABLE ${DB_PREFIX}pads ADD (contactHint VARCHAR(256) DEFAULT 'eMail oder Handynummer' NOT NULL);") or die(print_r($pdo->errorInfo(),true));
+}
+
 $r = $pdo->query("SELECT COUNT(*) FROM ${DB_PREFIX}pad_width");
 if ($r === false) {
   $pdo->query("CREATE TABLE ${DB_PREFIX}pad_width ( pad_id INT NOT NULL,
