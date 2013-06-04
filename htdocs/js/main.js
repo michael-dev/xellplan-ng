@@ -1511,6 +1511,22 @@ xp.onSavePlan = function(event) {
   return false;
 }
 
+xp.onExportPlan = function(event) {
+  event.stopPropagation();
+
+  var data = {};
+  data.id = xp.currentPlanId.id;
+  data.action = 'exportPlan';
+
+  $.fileDownload('ajax/planmanage.php', {
+    preparingMessageHtml: "Der Plan wird exportiert, bitte habe Geduld.",
+    httpMethod: "POST",
+    data: data
+  }).fail(xp.ajaxErrorHandler);
+
+  return false;
+}
+
 xp.onNewTemplate = function(event) {
   event.stopPropagation();
 
@@ -1613,6 +1629,7 @@ xp.init = function() {
   $('#admintoolbar_editEnd').datetimepicker({'dateFormat': 'yy-mm-dd', 'timeFormat': 'HH:mm:ss'});
   $( "#deleteplan" ).button().click(xp.onDeletePlan);
   $( "#saveplan" ).button().click(xp.onSavePlan);
+  $( "#exportplan" ).button().click(xp.onExportPlan);
   $( "#totemplate" ).button().click(xp.onNewTemplate);
   $( "#userdialog").dialog({'autoOpen':false, 'modal':true, 'width':1000});
   $( "#userdialogpw").dialog({'autoOpen':false, 'modal':true, 'width':1000});
