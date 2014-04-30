@@ -155,7 +155,7 @@ switch ($_REQUEST["action"]):
    $padDataStmt->execute(Array($planId)) or httperror($padDataStmt->errorInfo());
    $rows = $padDataStmt->fetchAll(PDO::FETCH_ASSOC);
 
-   $maxRow = 10; $maxcol = 10;
+   $maxRow = 10; $maxCol = 10;
    $padData = Array();
    foreach ($rows as $row) {
      $row["classes"] = explode(",", $row["classes"]);
@@ -179,7 +179,7 @@ switch ($_REQUEST["action"]):
    header("Content-Type: text/csv; charset=utf-8");
    header('Content-Disposition: attachment; filename="'.$_REQUEST["id"]. '.csv"');
 
-   $outstream = fopen("php://output",'w');  
+   $outstream = fopen("php://output",'w');
    fputcsv($outstream, Array('Gruppe:', $padDetails["group_id"], 'Bereich:', $padDetails["section_id"], 'Plan:', $padDetails["name"], "ID:", $padDetails["id"]));
    fputcsv($outstream, Array('Ersteller:', $padDetails["contact"], 'ursprünglich:', $padDetails["creator"]));
    fputcsv($outstream, Array('Ereignis (von,bis):', $padDetails["eventStart"], $padDetails["eventEnd"]));
