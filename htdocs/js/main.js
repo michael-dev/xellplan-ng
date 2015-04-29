@@ -449,11 +449,13 @@ xp.onDisplayVariable = function(event) {
                    $('#var_mail').val('');
                  }
                  $("#userdialog").dialog("open");
+/*
                  $( "#userdialog").dialog("widget").position({
                    my: 'left top',
                    at: 'left top',
                    of: $("#" + xp.getCellId(col, row, 0))
                  });
+*/
                },
       error: xp.ajaxErrorHandler,
       async:   false
@@ -475,18 +477,22 @@ xp.onCellClickForUser = function(event) {
   xp.configureOrgs();
   if ((plan.editPassword == 1) && !(xp.ass[row] && xp.ass[row][col] && Object.prototype.hasOwnProperty.call(xp.ass[row][col], 'email'))) {
     $( "#userdialogpw").dialog("open");
+/*
     $( "#userdialogpw").dialog("widget").position({
        my: 'left top',
        at: 'left top',
        of: $(this)
     });
+*/
   } else {
     $( "#userdialog").dialog("open");
+/*
     $( "#userdialog").dialog("widget").position({
-       my: 'left top',
-       at: 'left top',
+       my: 'right top',
+       at: 'right top',
        of: $(this)
     });
+*/
   }
 
   xp.currentFocus = event.data;
@@ -501,6 +507,14 @@ xp.onCellClickForUser = function(event) {
     if (xp.login.email) {
       $('#var_mail').val(xp.login.email);
     }
+  }
+
+  var fieldname = xp.getCellData(col, row, true);
+  if (fieldname != '') {
+    $('#div_fieldname').show();
+    $('#var_fieldname').text(fieldname);
+  } else {
+    $('#div_fieldname').hide();
   }
 
   if (plan.editPassword == 1) {
