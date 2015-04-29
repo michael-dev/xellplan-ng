@@ -13,6 +13,7 @@ xp.borderWidth = 1;
 xp.paddingWidth = 2;
 xp.data = {};
 xp.ass = {};
+xp.assWithMailPw = false;
 xp.currentMultiFocus = [];
 xp.users = {}
 xp.groups = {}
@@ -443,6 +444,7 @@ xp.onDisplayVariable = function(event) {
       data: {'id': planId, 'action':'listPlanDataEMail', 'password': pw},
       success: function (values, status, req) {
                  xp.ass = values.assistant;
+                 xp.assWithMailPw = pw;
                  if (xp.ass[row] && xp.ass[row][col]) {
                    $('#var_mail').val(xp.ass[row][col].email);
                  } else {
@@ -475,7 +477,7 @@ xp.onCellClickForUser = function(event) {
   var plan = xp.pads[group][section][planId];
 
   xp.configureOrgs();
-  if ((plan.editPassword == 1) && !(xp.ass[row] && xp.ass[row][col] && Object.prototype.hasOwnProperty.call(xp.ass[row][col], 'email'))) {
+  if ((plan.editPassword == 1) && !xp.assWithMailPw) {
     $( "#userdialogpw").dialog("open");
 /*
     $( "#userdialogpw").dialog("widget").position({
@@ -485,6 +487,9 @@ xp.onCellClickForUser = function(event) {
     });
 */
   } else {
+    if (plan.editPassword == 1) {
+      $('#var_password').val(xp.assWithMailPw);
+    }
     $( "#userdialog").dialog("open");
 /*
     $( "#userdialog").dialog("widget").position({
@@ -1328,6 +1333,7 @@ xp.switchToPlan = function(data) {
    .success(function (values, status, req) {
      xp.data = values.data;
      xp.ass = values.assistant;
+     xp.assWithMailPw = false;
      xp.colWidths = values.colWidths;
      xp.rowHeights = values.rowHeights;
      xp.log = values.log;
@@ -1576,6 +1582,7 @@ xp.onDeletePlan = function(event) {
 }
 
 xp.ajaxErrorHandler = function (jqXHR, textStatus, errorThrown) {
+  xp.assWithMailPw = false;
   var t = window.open('','fehler');
   var msg = String(textStatus) + '\n' + String(errorThrown) + '\n' + String(jqXHR.responseText);
   if ( t === null) {
