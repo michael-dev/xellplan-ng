@@ -13,7 +13,7 @@ xp.borderWidth = 1;
 xp.paddingWidth = 2;
 xp.data = {};
 xp.ass = {};
-xp.currentFocus = null;
+xp.currentMultiFocus = [];
 xp.users = {}
 xp.groups = {}
 xp.pads = {};
@@ -292,28 +292,37 @@ xp.resizeTable = function() {
 }
 
 xp.onClickProp = function(event) {
-  if (xp.currentFocus == null) {
+  var me = $(this);
+  if (xp.currentFocus == null && xp.currentMultiFocus.length == 0) {
     return;
   }
+  if (xp.currentFocus) {
+    xp.onClickPropOne(event, xp.currentFocus, me);
+    var cellId = xp.getCellId(xp.currentFocus.col, xp.currentFocus.row, true);
+    $('#'+cellId).focus();
+  }
+  for (var i=0; i < xp.currentMultiFocus.length; i++)
+    xp.onClickPropOne(event, xp.currentMultiFocus[i], me);
+}
+
+xp.onClickPropOne = function(event, currentFocus, me) {
   if (event.data == 'val') {
-    var propClass = $(this).val();
-    if ($(this).prop('checked')) {
-      xp.cellAddClass(xp.currentFocus.col, xp.currentFocus.row, propClass);
+    var propClass = me.val();
+    if (me.prop('checked')) {
+      xp.cellAddClass(currentFocus.col, currentFocus.row, propClass);
     } else {
-      xp.cellDelClass(xp.currentFocus.col, xp.currentFocus.row, propClass);
+      xp.cellDelClass(currentFocus.col, currentFocus.row, propClass);
     }
   } else if (event.data == 'radio') {
-    var groupId = $(this).attr('id');
+    var groupId = me.attr('id');
     $('#'+groupId+' input:not(:checked)').each(function (k, v) {
-        xp.cellDelClass(xp.currentFocus.col, xp.currentFocus.row, v.value);
+        xp.cellDelClass(currentFocus.col, currentFocus.row, v.value);
       });
     $('#'+groupId+' input:checked').each(function (k, v) {
-        xp.cellAddClass(xp.currentFocus.col, xp.currentFocus.row, v.value);
+        xp.cellAddClass(currentFocus.col, currentFocus.row, v.value);
       });
   }
-  xp.saveCell(xp.currentFocus.col, xp.currentFocus.row);
-  var cellId = xp.getCellId(xp.currentFocus.col, xp.currentFocus.row, true);
-  $('#'+cellId).focus();
+  xp.saveCell(currentFocus.col, currentFocus.row);
 }
 
 xp.cellAddClass = function(col, row, propClass) {
@@ -387,7 +396,26 @@ xp.configureToolbar = function(col,row) {
   $( "#variable" ).button("refresh");
   $( "#fontsize" ).buttonset("refresh");
   $( "#save" ).unbind('click');
+  $( "#save" ).show();
   $( "#save" ).click({'col': col, 'row':row}, xp.onCellConfirm);
+}
+
+xp.configureMultiToolbar = function() {
+  $('#toolbar').css('visibility','visible');
+  $( "#bold" ).attr('checked', false);
+  $( "#italics" ).attr('checked', false);
+  $( "#underline" ).attr('checked', false);
+  $( "#variable" ).attr('checked', false);
+  $( "#fontsize0" ).attr('checked', false);
+  $( "#fontsize2" ).attr('checked', false);
+  $( "#fontsize1" ).attr('checked', false);
+  $( "#bold" ).button("refresh");
+  $( "#italics" ).button("refresh");
+  $( "#underline" ).button("refresh");
+  $( "#variable" ).button("refresh");
+  $( "#fontsize" ).buttonset("refresh");
+  $( "#save" ).unbind('click');
+  $( "#save" ).hide();
 }
 
 xp.configureOrgs = function() {
@@ -568,10 +596,47 @@ xp.onCellClickForAdmin = function(event) {
   if (event.data.row + 1 >= xp.numRow) {
     xp.addCells(xp.numCol, xp.numRow + 1);
   }
-  if ((event.data.col != -1) && (event.data.row != -1)) {
-    xp.addCell(event.data.col,event.data.row,2);
+  if (event.ctrlKey) {
+    if (xp.currentFocus)
+      xp.onCellConfirmHandler(xp.currentFocus.col, xp.currentFocus.row, true);
+    var cellId = xp.getCellId(event.data.col, event.data.row, 0);
+    xp.currentMultiFocus.push({"col":event.data.col,"row":event.data.row})
+    $('#'+cellId).addClass('multiselect');
+    xp.configureMultiToolbar()
+    $('body').on('keydown.multiEsc', xp.onKey);
+  } else if (event.shiftKey) {
+    for (var i=0; i < xp.currentMultiFocus.length; i++) {
+      var cellId = xp.getCellId(xp.currentMultiFocus[i].col, xp.currentMultiFocus[i].row, 0);
+      $('#'+cellId).removeClass('multiselect');
+    }
+    xp.currentMultiFocus = [];
+    if (xp.currentFocus) {
+      var colMin = Math.min(xp.currentFocus.col, event.data.col);
+      var colMax = Math.max(xp.currentFocus.col, event.data.col);
+      var rowMin = Math.min(xp.currentFocus.row, event.data.row);
+      var rowMax = Math.max(xp.currentFocus.row, event.data.row);
+      xp.onCellConfirmHandler(xp.currentFocus.col, xp.currentFocus.row, true);
+      for (var col = colMin; col <= colMax; col++) {
+        for (var row = rowMin; row <= rowMax; row++) {
+          var cellId = xp.getCellId(col, row, 0);
+          xp.currentMultiFocus.push({"col":col,"row":row})
+          $('#'+cellId).addClass('multiselect');
+        }
+      }
+      xp.configureMultiToolbar()
+      $('body').on('keydown.multiEsc', xp.onKey);
+    }
+  } else {
+    for (var i=0; i < xp.currentMultiFocus.length; i++) {
+      var cellId = xp.getCellId(xp.currentMultiFocus[i].col, xp.currentMultiFocus[i].row, 0);
+      $('#'+cellId).removeClass('multiselect');
+    }
+    xp.currentMultiFocus = [];
+    $('body').off('keydown.multiEsc');
+    if ((event.data.col != -1) && (event.data.row != -1)) {
+      xp.addCell(event.data.col,event.data.row,2);
+    }
   }
-//alert(event.shiftKey);
   xp.resizeTable();
   /* restore current scroll position */
   $(window).scrollTop(scrollTop);
@@ -580,12 +645,30 @@ xp.onCellClickForAdmin = function(event) {
   event.stopPropagation();
 }
 
+xp.onKey = function(event) {
+  if (event.which != 27) {
+    return;
+  }
+  if (event.shiftKey || event.ctrlKey) {
+    return;
+  }
+  event.stopPropagation();
+  for (var i=0; i < xp.currentMultiFocus.length; i++) {
+    var cellId = xp.getCellId(xp.currentMultiFocus[i].col, xp.currentMultiFocus[i].row, 0);
+    $('#'+cellId).removeClass('multiselect');
+  }
+  xp.currentMultiFocus = [];
+  $('body').off('keydown.multiEsc');
+  $('#toolbar').css('visibility','hidden');
+  return false;
+}
+
 xp.onCellKey = function(event) {
   if (event.which != 13 &&
       event.which != 27) {
     return;
   }
-  if (e.shiftKey || e.ctrlKey) {
+  if (event.shiftKey || event.ctrlKey) {
     return;
   }
   event.stopPropagation();
