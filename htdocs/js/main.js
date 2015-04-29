@@ -665,6 +665,7 @@ xp.onKey = function(event) {
 
 xp.onCellKey = function(event) {
   if (event.which != 13 &&
+      event.which != 9 &&
       event.which != 27) {
     return;
   }
@@ -672,7 +673,21 @@ xp.onCellKey = function(event) {
     return;
   }
   event.stopPropagation();
-  xp.onCellConfirmHandler(event.data.col, event.data.row, (event.which == 13));
+  xp.onCellConfirmHandler(event.data.col, event.data.row, (event.which != 27));
+  if (event.which == 9) {
+    var cellId2 = xp.getCellId(event.data.col + 1, event.data.row, true);
+    var cellId1 = xp.getCellId(event.data.col + 1, event.data.row, false);
+    if ($('#'+cellId2).length > 0) {
+      $('#'+cellId2).click();
+    } else {
+      $('#'+cellId1).click();
+    }
+    var scrollTop = $(window).scrollTop();
+    var scrollLeft = $(window).scrollLeft();
+    var colWidth = xp.getColWidth(event.data.col, false);
+    $(window).scrollTop(scrollTop);
+    $(window).scrollLeft(scrollLeft + colWidth);
+  }
   return false;
 }
 
