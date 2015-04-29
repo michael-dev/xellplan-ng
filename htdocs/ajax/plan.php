@@ -73,7 +73,8 @@ switch ($_REQUEST["action"]):
    if ($row["userEditable"] == 0) {
      httperror("Dieser Plan ist nicht editierbar.");
    }
-   if ($row["editPassword"] === null) {
+   if ($row["editPassword"] === null && isset($_SESSION["skipCaptcha"]) && $_SESSION["skipCaptcha"] ) {
+   } elseif ($row["editPassword"] === null) {
      // checkCaptcha($captchaId, $captcha)
      global $captchaCookie;
 
@@ -88,6 +89,7 @@ switch ($_REQUEST["action"]):
      if (!$captchaOk) {
        httperror("Captcha war falsch.");
      }
+     $_SESSION["skipCaptcha"] = true;
    } else {
      $password = $_REQUEST["password"];
      $passwordHash = $row["editPassword"];

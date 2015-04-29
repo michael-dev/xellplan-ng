@@ -24,6 +24,7 @@ xp.log = {};
 xp.login = null;
 xp.loginTimer = null;
 xp.orgs = [];
+xp.needCaptcha = true;
 
 if (! Array.prototype.clone ) {
   Array.prototype.clone = function() {
@@ -505,10 +506,13 @@ xp.onCellClickForUser = function(event) {
   if (plan.editPassword == 1) {
     $('.var_password').show();
     $('.var_captcha').hide();
-  } else {
+  } else if (xp.needCaptcha) {
     $('.var_password').hide();
     $('.var_captcha').show();
     xp.onRefreshCaptcha();
+  } else {
+    $('.var_password').hide();
+    $('.var_captcha').hide();
   }
   return false;
 }
@@ -539,14 +543,14 @@ xp.onSaveVariable = function (event) {
   if (var_name == '') {
     var_name = var_email;
   }
-  if (plan.editPassword == 0) {
-    if (var_captcha == '') {
-      alert('Bitte Captcha eingeben!');
-      return false;
-    }
-  } else {
+  if (plan.editPassword == 1) {
     if (var_password == '') {
       alert('Bitte Passwort eingeben!');
+      return false;
+    }
+  } else if (xp.needCaptcha) {
+    if (var_captcha == '') {
+      alert('Bitte Captcha eingeben!');
       return false;
     }
   }
@@ -1671,6 +1675,7 @@ xp.setLoginStatus = function() {
   $.post('ajax/login.php', {url: self.location.href})
    .success(function (values, textStatus, jqXHR) {
     xp.login = values;
+    xp.needCaptcha = values.needCaptcha;
     xp.orgs = values.orgs;
     if (xp.login.loginMode != "basic") {
       $('.login').show();

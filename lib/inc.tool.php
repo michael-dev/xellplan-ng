@@ -15,3 +15,6 @@ function colName($i) {
   };
   return $c;
 }
+
+session_start();
+
