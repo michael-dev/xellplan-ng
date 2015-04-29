@@ -8,6 +8,7 @@ if ($loginMode != "basic") {
  $url = NULL;
  if (isset($_REQUEST["url"])) { $url = $_REQUEST["url"]; }
  if ($as->isAuthenticated()) {
+  $_SESSION["skipCaptcha"] = true;
   $attributes = $as->getAttributes();
  } else {
   $attributes = NULL;
