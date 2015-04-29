@@ -1618,7 +1618,7 @@ xp.onExportPlan = function(event) {
 
   var data = {};
   data.id = xp.currentPlanId.id;
-  data.action = 'exportPlan';
+  data.action = event.data.action;
 
   $.fileDownload('ajax/planmanage.php', {
     preparingMessageHtml: "Der Plan wird exportiert, bitte habe Geduld.",
@@ -1731,7 +1731,8 @@ xp.init = function() {
   $('#admintoolbar_editEnd').datetimepicker({'dateFormat': 'yy-mm-dd', 'timeFormat': 'HH:mm:ss'});
   $( "#deleteplan" ).button().click(xp.onDeletePlan);
   $( "#saveplan" ).button().click(xp.onSavePlan);
-  $( "#exportplan" ).button().click(xp.onExportPlan);
+  $( "#exportplan" ).button().click({'action':'exportPlan'}, xp.onExportPlan);
+  $( "#exportplan2" ).button().click({'action':'exportPlan2'}, xp.onExportPlan);
   $( "#totemplate" ).button().click(xp.onNewTemplate);
   $( "#userdialog").dialog({'autoOpen':false, 'modal':true, 'width':1000});
   $( "#userdialogpw").dialog({'autoOpen':false, 'modal':true, 'width':1000});
