@@ -141,7 +141,7 @@ xp.addCell = function(col, row, editable) {
   // construct cell
   var cell;
   if (edit) {
-    cell = $('<input/>').attr('type','text');
+    cell = $('<textarea/>');
   } else {
     cell = $('<div/>');
   }
@@ -265,24 +265,24 @@ xp.resizeTable = function() {
   for (var row = -1; row < xp.numRow; row++) {
     var rowClass = xp.getRowClass(row);
     $('div.' + rowClass).css('height', xp.getRowHeight(row,false));
-    $('input.' + rowClass).css('height', xp.getRowHeight(row,true));
+    $('textarea.' + rowClass).css('height', xp.getRowHeight(row,true));
     $('.' + rowClass).css('top', xp.getRowTop(row));
   }
   for (var col = -1; col < xp.numCol; col++) {
     var colClass = xp.getColClass(col);
     $('div.' + colClass).css('width', xp.getColWidth(col, false));
-    $('input.' + colClass).css('width', xp.getColWidth(col, true));
+    $('textarea.' + colClass).css('width', xp.getColWidth(col, true));
     $('.' + colClass).css('left', xp.getColLeft(col));
   }
 
   var rowClass = xp.getRowClass(xp.numRow);
   $('div.' + rowClass).css('height', xp.getRowHeight(xp.numRow,false));
-  $('input.' + rowClass).css('height', xp.getRowHeight(xp.numRow,true));
+  $('textarea.' + rowClass).css('height', xp.getRowHeight(xp.numRow,true));
   $('.' + rowClass).css('top', xp.getRowTop(xp.numRow));
 
   var colClass = xp.getColClass(xp.numCol);
   $('div.' + colClass).css('width', xp.getColWidth(xp.numCol, false));
-  $('input.' + colClass).css('width', xp.getColWidth(xp.numCol, true));
+  $('textarea.' + colClass).css('width', xp.getColWidth(xp.numCol, true));
   $('.' + colClass).css('left', xp.getColLeft(xp.numCol));
 
   var totalWidth = xp.getColLeft(xp.numCol+1);
@@ -571,6 +571,7 @@ xp.onCellClickForAdmin = function(event) {
   if ((event.data.col != -1) && (event.data.row != -1)) {
     xp.addCell(event.data.col,event.data.row,2);
   }
+//alert(event.shiftKey);
   xp.resizeTable();
   /* restore current scroll position */
   $(window).scrollTop(scrollTop);
@@ -582,6 +583,9 @@ xp.onCellClickForAdmin = function(event) {
 xp.onCellKey = function(event) {
   if (event.which != 13 &&
       event.which != 27) {
+    return;
+  }
+  if (e.shiftKey || e.ctrlKey) {
     return;
   }
   event.stopPropagation();

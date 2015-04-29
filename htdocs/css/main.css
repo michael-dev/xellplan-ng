@@ -1,19 +1,19 @@
 #content { position: relative; }
-.xpCell { position: absolute !important; border: thin solid black; padding: 2px; overflow: visible; margin: 0px; background-color: white; }
+.xpCell { position: absolute !important; border: thin solid black; padding: 2px; overflow: visible; margin: 0px; background-color: white; white-space: pre-line; }
 .xpCellHeader { background-color: lightgrey; text-align: center; }
 .xpCellNumber { background-color: lightgrey; text-align: right; }
 .xpCell.editable { cursor: text; }
 .xpCell.hasFocus { border: thin solid red; }
-input.xpCell { border: thin solid blue; }
+textarea.xpCell { border: thin solid blue; }
 #toolbar { padding: 10px 4px; }
 .bold { font-weight:bold; }
 .italics { font-style:italic; }
 .underline { text-decoration:underline; }
 .variable { background-color: yellow; }
-.variable.variable-filled { background-color: green; }
-.smallFontsize { font-size: x-small; }
-.normalFontsize { font-size: medium; }
-.bigFontsize { font-size: x-large; }
+.variable.variable-filled { background-color: #00FF00; }
+.smallFontsize { font-size: x-small !important; }
+.normalFontsize { font-size: medium !important; }
+.bigFontsize { font-size: x-large !important; }
 div.tab { position: relative; }
 #admintoolbar label, #usermgnt label, #usrgrplist, #grplist2, #planlist label { display: inline-block; min-width: 250px; vertical-align: top; }
 #ulplanlist tr, #ulplanlist2 li { cursor: pointer; }
