@@ -212,6 +212,11 @@ function requireGroupAdmin($groupId) {
   }
 }
 
+function isPadAdmin($padId) {
+  global $pdo, $DB_PREFIX, $pwObj, $attributes, $loginMode;
+  return false;
+}
+
 function requirePadAdmin($padId) {
   global $pdo, $DB_PREFIX, $pwObj, $attributes, $loginMode;
 

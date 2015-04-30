@@ -22,6 +22,7 @@ switch ($_REQUEST["action"]):
     $row["classes"] = explode(",", $row["classes"]);
     $result["data"][$row["row"]][$row["col"]] = $row;
   }
+
   $sql = "SELECT row, col, name, organization";
   $sqlargs = Array();
   if ($cfgRow["editPassword"] === null && !$cfgRow["requireSamlLogin"]) {
@@ -32,7 +33,6 @@ switch ($_REQUEST["action"]):
   }
   $sql .= " FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ?";
   $sqlArgs[] = $planId;
-
   $padAssStmt = $pdo->prepare($sql) or httperror($pdo->errorInfo());
   $padAssStmt->execute($sqlArgs) or httperror($padAssStmt->errorInfo());
   $rows = $padAssStmt->fetchAll(PDO::FETCH_ASSOC);

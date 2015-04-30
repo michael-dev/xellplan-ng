@@ -17,7 +17,7 @@ switch ($_REQUEST["action"]):
      $tmplPlanStmt->execute(Array($planId, $_REQUEST["template"])) or httperror($tmplPlanStmt->errorInfo());
    }
    $result["id"] = $planId;
-   $pads = $pdo->prepare("SELECT group_id, section_id, id, name, comment, eventStart, eventEnd, editStart, editEnd, creator, contact, (editPassword IS NOT NULL) AS editPassword, (adminPassword IS NOT NULL) AS adminPassword, ( (editEnd > NOW()) AND (editStart < NOW()) ) AS userEditable FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
+   $pads = $pdo->prepare("SELECT group_id, section_id, id, name, comment, eventStart, eventEnd, editStart, editEnd, creator, contact, (editPassword IS NOT NULL) AS editPassword, (adminPassword IS NOT NULL) AS adminPassword, ( (editEnd > NOW()) AND (editStart < NOW()) ) AS userEditable, subscribeHint, contactHint, requireSamlLogin FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
    $pads->execute(Array($planId)) or httperror($pads->errorInfo());
    $rows = $pads->fetchAll(PDO::FETCH_ASSOC);
    $result["meta"] = $rows[0];
