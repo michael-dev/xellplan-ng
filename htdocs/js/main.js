@@ -1404,6 +1404,7 @@ xp.configureUserToolbar = function() {
   }
   $("#toadmin").attr('checked', xp.adminMode);
   $("#toadmin").button("refresh");
+  $("#toadmin").button("widget").addClass("float-to-right");
 }
 
 xp.configureAdminToolbar = function() {

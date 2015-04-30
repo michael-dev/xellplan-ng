@@ -45,4 +45,4 @@ div.tab { position: relative; }
 div:hover > .info { visibility: visible; }
 #var_subscribeHint { white-space: pre; font-weight: bold; }
 .multiselect { border: blue thin solid; z-index: 5;}
-
+.float-to-right { float: right; }

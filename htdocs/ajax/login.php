@@ -13,7 +13,6 @@ $result["loginUrl"] = $loginUrl;
 $result["logoutUrl"] = $logoutUrl;
 $result["orgs"] = $orgs;
 $result["needCaptcha"] = !(isset($_SESSION["skipCaptcha"]) && $_SESSION["skipCaptcha"]);
-$result["sess"] = $_SESSION;
 
 header("Content-Type: text/json; charset=UTF-8");
 echo json_encode($result);
