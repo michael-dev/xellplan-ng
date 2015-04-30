@@ -38,6 +38,10 @@ $r = $pdo->query("SELECT COUNT(contactHint) FROM ${DB_PREFIX}pads");
 if ($r === false) {
   $pdo->query("ALTER TABLE ${DB_PREFIX}pads ADD (contactHint VARCHAR(256) DEFAULT 'eMail oder Handynummer' NOT NULL);") or die(print_r($pdo->errorInfo(),true));
 }
+$r = $pdo->query("SELECT COUNT(requireSamlLogin) FROM ${DB_PREFIX}pads");
+if ($r === false) {
+  $pdo->query("ALTER TABLE ${DB_PREFIX}pads ADD (requireSamlLogin BOOLEAN DEFAULT FALSE NOT NULL);") or die(print_r($pdo->errorInfo(),true));
+}
 
 $r = $pdo->query("SELECT COUNT(*) FROM ${DB_PREFIX}pad_width");
 if ($r === false) {

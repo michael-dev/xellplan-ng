@@ -37,7 +37,7 @@ switch ($_REQUEST["action"]):
  break;
  case "savePlan":
    requirePadAdmin($_REQUEST["id"]);
-   foreach (Array('section_id', 'id', 'name', 'comment', 'eventStart', 'eventEnd', 'editStart', 'editEnd', 'contact', 'editPassword', 'adminPassword','contactHint','subscribeHint') AS $key) {
+   foreach (Array('section_id', 'id', 'name', 'comment', 'eventStart', 'eventEnd', 'editStart', 'editEnd', 'contact', 'editPassword', 'adminPassword','contactHint','subscribeHint','requireSamlLogin') AS $key) {
      if (!isset($_REQUEST[$key])) { continue; }
      $value = $_REQUEST[$key];
      if (empty($value)) { $value = NULL; }
@@ -45,7 +45,7 @@ switch ($_REQUEST["action"]):
      $updPlanStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pads SET $key = ? WHERE id = ?") or httperror($pdo->errorInfo());
      $updPlanStmt->execute(Array($value, $_REQUEST["id"])) or httperror($updPlanStmt->errorInfo());
    }
-   $pads = $pdo->prepare("SELECT group_id, section_id, id, name, comment, eventStart, eventEnd, editStart, editEnd, creator, contact, (editPassword IS NOT NULL) AS editPassword, (adminPassword IS NOT NULL) AS adminPassword, ( (editEnd > NOW()) AND (editStart < NOW()) ) AS userEditable, contactHint, subscribeHint FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
+   $pads = $pdo->prepare("SELECT group_id, section_id, id, name, comment, eventStart, eventEnd, editStart, editEnd, creator, contact, (editPassword IS NOT NULL) AS editPassword, (adminPassword IS NOT NULL) AS adminPassword, ( (editEnd > NOW()) AND (editStart < NOW()) ) AS userEditable, contactHint, subscribeHint, requireSamlLogin FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
    $pads->execute(Array($_REQUEST["id"])) or httperror($pads->errorInfo());
    $result["data"] = $pads->fetch(PDO::FETCH_ASSOC);
  break;
@@ -147,7 +147,7 @@ switch ($_REQUEST["action"]):
    requirePadAdmin($_REQUEST["id"]);
    $planId = (int) $_REQUEST["id"];
 
-   $padStmt = $pdo->prepare("SELECT group_id, section_id, id, name, comment, eventStart, eventEnd, editStart, editEnd, creator, contact, (editPassword IS NOT NULL) AS editPassword, (adminPassword IS NOT NULL) AS adminPassword, subscribeHint, contactHint FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
+   $padStmt = $pdo->prepare("SELECT group_id, section_id, id, name, comment, eventStart, eventEnd, editStart, editEnd, creator, contact, (editPassword IS NOT NULL) AS editPassword, (adminPassword IS NOT NULL) AS adminPassword, subscribeHint, contactHint, requireSamlLogin FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
    $padStmt->execute(Array($planId)) or httperror($padDataStmt->errorInfo());
    $padDetails = $padStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -188,6 +188,7 @@ switch ($_REQUEST["action"]):
    fputcsv($outstream, Array('Bearbeiten-Kennwort:', $padDetails["adminPassword"] ? "ja" : "nein", "Dienste-Kenntwort:", $padDetails["editPassword"] ? "ja" : "nein"));
    fputcsv($outstream, Array('Information für Dienste:', $padDetails["subscribeHint"]));
    fputcsv($outstream, Array('Abgefragte Kontaktdaten:', $padDetails["contactHint"]));
+   fputcsv($outstream, Array('Erfordere SAML-Login:', $padDetails["requireSamlLogin"] ? "ja" : "nein"));
    fputcsv($outstream, Array('Zeilen:', $maxRow + 1, "Spalten:", $maxCol + 1));
    fputcsv($outstream, Array(''));
    fputcsv($outstream, Array('Inhalt'));
@@ -231,7 +232,7 @@ switch ($_REQUEST["action"]):
    requirePadAdmin($_REQUEST["id"]);
    $planId = (int) $_REQUEST["id"];
 
-   $padStmt = $pdo->prepare("SELECT group_id, section_id, id, name, comment, eventStart, eventEnd, editStart, editEnd, creator, contact, (editPassword IS NOT NULL) AS editPassword, (adminPassword IS NOT NULL) AS adminPassword, subscribeHint, contactHint FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
+   $padStmt = $pdo->prepare("SELECT group_id, section_id, id, name, comment, eventStart, eventEnd, editStart, editEnd, creator, contact, (editPassword IS NOT NULL) AS editPassword, (adminPassword IS NOT NULL) AS adminPassword, subscribeHint, contactHint, requireSamlLogin FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
    $padStmt->execute(Array($planId)) or httperror($padDataStmt->errorInfo());
    $padDetails = $padStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -272,6 +273,7 @@ switch ($_REQUEST["action"]):
    fputcsv($outstream, Array('Bearbeiten-Kennwort:', $padDetails["adminPassword"] ? "ja" : "nein", "Dienste-Kenntwort:", $padDetails["editPassword"] ? "ja" : "nein"));
    fputcsv($outstream, Array('Information für Dienste:', $padDetails["subscribeHint"]));
    fputcsv($outstream, Array('Abgefragte Kontaktdaten:', $padDetails["contactHint"]));
+   fputcsv($outstream, Array('Erfordere SAML-Login:', $padDetails["requireSamlLogin"] ? "ja" : "nein"));
    fputcsv($outstream, Array('Zeilen:', $maxRow + 1, "Spalten:", $maxCol + 1));
    fputcsv($outstream, Array(''));
    fputcsv($outstream, Array('Inhalt'));

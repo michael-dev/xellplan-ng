@@ -24,6 +24,7 @@ xp.firstRun = true;
 xp.log = {};
 xp.login = null;
 xp.loginTimer = null;
+xp.gotoPlanAfterLoginData = null;
 xp.orgs = [];
 xp.needCaptcha = true;
 
@@ -1329,6 +1330,22 @@ xp.switchToPlan = function(data) {
   var plan = xp.pads[group][section][planId];
   xp.currentPlanId = data;
 
+  if (plan.requireSamlLogin && !xp.login) {
+    xp.gotoPlanAfterLoginData = data;
+    return;
+  }
+  if (plan.requireSamlLogin && !xp.login.isAuth && xp.login.loginMode != "basic") {
+    var returnUrl=self.location.protocol + '//' + self.location.host+self.location.pathname+'?planId='+planId;
+    var loginUrl=xp.login.loginUrl;
+    if (loginUrl.search("&ReturnTo") >= 0) {
+      loginUrl=loginUrl.substr(0, loginUrl.search("&ReturnTo"));
+    }
+    loginUrl = loginUrl + "&ReturnTo=" + encodeURIComponent(returnUrl);
+    $( "#userdlgloginlnk").attr('href',loginUrl);
+    $( "#userdialoglogin").dialog("open");
+    return;
+  }
+
   $.post('ajax/plan.php', {'id': planId, 'action':'listPlanData'})
    .success(function (values, status, req) {
      xp.data = values.data;
@@ -1437,6 +1454,12 @@ xp.configureAdminToolbar = function() {
   $('#admintoolbar_contact').val(plan.contact);
   $('#admintoolbar_contactHint').val(plan.contactHint);
   $('#admintoolbar_subscribeHint').val(plan.subscribeHint);
+  if (xp.login.loginMode != "basic") {
+    $('#admintoolbar_requireSamlLogin').val(plan.requireSamlLogin);
+    $('#admintoolbar_requireSamlLogin').show();
+  } else {
+    $('#admintoolbar_requireSamlLogin').hide();
+  }
   if (plan.editPassword == 1) {
     $('#admintoolbar_editPassword').val('**gesetzt**');
   } else {
@@ -1563,6 +1586,7 @@ xp.onChangeAdminMode = function(event) {
     $('#toolbar').show();
   }
   xp.initTable();
+  $('#saveplan').focus();
 }
 
 xp.onDeletePlan = function(event) {
@@ -1612,6 +1636,9 @@ xp.onSavePlan = function(event) {
   data.subscribeHint = $('#admintoolbar_subscribeHint').val();
   data.editPassword = $('#admintoolbar_editPassword').val();
   data.adminPassword = $('#admintoolbar_adminPassword').val();
+  if (xp.login.loginMode != "basic") {
+    data.requireSamlLogin = $('#admintoolbar_requireSamlLogin').val();
+  }
 
   if (data.editPassword == '') {
     data.editPassword = null;
@@ -1715,6 +1742,11 @@ xp.setLoginStatus = function() {
       $('.login').hide();
       clearInterval(xp.loginTimer);
     }
+    if (xp.gotoPlanAfterLoginData) {
+      data = xp.gotoPlanAfterLoginData;
+      xp.gotoPlanAfterLoginData = null;
+      xp.switchToPlan(data);
+    }
   });
   // no error handler -> would be called too often
 }
@@ -1763,6 +1795,7 @@ xp.init = function() {
   $( "#totemplate" ).button().click(xp.onNewTemplate);
   $( "#userdialog").dialog({'autoOpen':false, 'modal':true, 'width':1000});
   $( "#userdialogpw").dialog({'autoOpen':false, 'modal':true, 'width':1000});
+  $( "#userdialoglogin").dialog({'autoOpen':false, 'modal':true, 'width':1000});
   $( "#var_save" ).button().click(xp.onSaveVariable);
   $( "#var_cancel" ).button().click(xp.onCancelVariable);
   $( "#var_display_pw" ).button().click(xp.onDisplayVariable);

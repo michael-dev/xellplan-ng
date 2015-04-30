@@ -73,9 +73,9 @@
         <div id="usertoolbar_comment"></div>
       </span>
       <span id="admintoolbar" class="ui-widget-header ui-corner-all">
+        <button id="saveplan">Meta-Daten speichern</button>
         <button id="totemplate" title="Neue Vorlage aus dem aktuellen Plan erstellen.">Neue Vorlage erstellen</button>
         <button id="deleteplan">Plan löschen</button>
-        <button id="saveplan">Meta-Daten speichern</button>
         <button id="exportplan">Plan exportieren</button>
         <button id="exportplan2">Plan (vereinfacht) exportieren</button>
         <fieldset><legend>Meta-Daten</legend>
@@ -93,6 +93,7 @@
         <div style="position:relative;"><label for="contact">Kontakt</label>: <input type="text" id="admintoolbar_contact" name="contact" placeholder="Kontakt"/><span class="info">Diese eMail-Adresse wird als Ansprechpartner für den Plan angezeigt.</span></div>
         <div style="position:relative;"><label for="contactHint">Kontakt von Diensten</label>: <input type="text" id="admintoolbar_contactHint" name="contactHint" placeholder="Kontaktinformation, welche Dienste hinterlegen sollen."/><span class="info">Dieser Text wird beim Eintragen von Diensten angezeigt.</span></div>
         <div style="position:relative;"><label for="subscribeHint">Dienstehinweis</label>: <textarea type="text" id="admintoolbar_subscribeHint" name="subscribeHint"></textarea><span class="info">Dieser Text wird beim Eintragen von Diensten angezeigt.</span></div>
+        <div style="position:relative;"><label for="requireSamlLogin">Login erforderlich?</label>: <select id="admintoolbar_requireSamlLogin" name="requireSamlLogin"><option value="0">Nein</option><option value="1">Ja</option></select><span class="info">Der Nutzer wird aufgefordert, sich zunächst mit Uni-Login einzuloggen.</span></div>
         <div><label for="editPassword">Passwort für Nutzer</label>: <input type="text" id="admintoolbar_editPassword" name="editPassword" placeholder="Passwort für Dienste"/></div>
         <div><label for="adminPassword">Passwort für Admins</label>: <input type="text" id="admintoolbar_adminPassword" name="adminPassword" placeholder="Passwort für zusätzliche Admins"/></div>
         </fieldset>
@@ -143,6 +144,9 @@
         <div class="var_password"><label for="password">Passwort:</label> <input id="var_password2" name="password" type="password"/></div>
         <div id="postcaptcha_pw"><button id="var_display_pw">Anzeigen</button> <button id="var_cancel_pw">Abbrechen</button></div>
      </div>
+     <div id="userdialoglogin" title="Login erforderlich">
+        Für den Zugriff auf diesen Plan müssen sie sich vorher einloggen.
+        <a href="" id="userdlgloginlnk">Weiter</a>
     </div>
     <div id="planlog" class="tab">
       <span id="logtoolbar" class="ui-widget-header ui-corner-all">
