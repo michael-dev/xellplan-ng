@@ -92,6 +92,10 @@ if ($r === false) {
                                                    email VARCHAR(128),
                                                  PRIMARY KEY (pad_id, row, col) );") or die(print_r($pdo->errorInfo(),true));
 }
+$r = $pdo->query("SELECT COUNT(emailByLogin) FROM ${DB_PREFIX}pad_assistant");
+if ($r === false) {
+  $pdo->query("ALTER TABLE ${DB_PREFIX}pad_assistant ADD (emailByLogin VARCHAR(128) DEFAULT NULL);") or die(print_r($pdo->errorInfo(),true));
+}
 
 $r = $pdo->query("SELECT COUNT(*) FROM ${DB_PREFIX}pad_log");
 if ($r === false) {

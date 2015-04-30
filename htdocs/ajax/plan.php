@@ -1,6 +1,6 @@
 <?php
 
-global $pdo, $DB_PREFIX, $isLogin, $loginMode;
+global $pdo, $DB_PREFIX, $isLogin, $loginMode, $attributes;
 include '../../lib/inc.all.php';
 
 $result = Array();
@@ -22,8 +22,19 @@ switch ($_REQUEST["action"]):
     $row["classes"] = explode(",", $row["classes"]);
     $result["data"][$row["row"]][$row["col"]] = $row;
   }
-  $padAssStmt = $pdo->prepare("SELECT row, col, name, organization".(($cfgRow["editPassword"] === null) ? ", email" : "")." FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ?") or httperror($pdo->errorInfo());
-  $padAssStmt->execute(Array($planId)) or httperror($padAssStmt->errorInfo());
+  $sql = "SELECT row, col, name, organization";
+  $sqlargs = Array();
+  if ($cfgRow["editPassword"] === null && !$cfgRow["requireSamlLogin"]) {
+		$sql .= ", email";
+  } else if ($cfgRow["editPassword"] === null && $cfgRow["requireSamlLogin"]) {
+		$sql .= ", IF(ISNULL(emailByLogin),email,IF(STRCMP(emailByLogin,?),'**hidden**',email)) as email";
+    $sqlArgs[] = $attributes["eduPersonPrincipalName"][0];
+  }
+  $sql .= " FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ?";
+  $sqlArgs[] = $planId;
+
+  $padAssStmt = $pdo->prepare($sql) or httperror($pdo->errorInfo());
+  $padAssStmt->execute($sqlArgs) or httperror($padAssStmt->errorInfo());
   $rows = $padAssStmt->fetchAll(PDO::FETCH_ASSOC);
   $result["assistant"] = Array();
   foreach ($rows as $row) {
@@ -64,8 +75,19 @@ switch ($_REQUEST["action"]):
   if ($row["requireSamlLogin"] && $loginMode != "basic" && !$isLogin) {
       httperror("Du warst nicht eingeloggt.");
   }
-  $padAssStmt = $pdo->prepare("SELECT row, col, name, organization, email FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ?") or httperror($pdo->errorInfo());
-  $padAssStmt->execute(Array($planId)) or httperror($padAssStmt->errorInfo());
+  $sql = "SELECT row, col, name, organization";
+  $sqlargs = Array();
+  if (!$row["requireSamlLogin"]) {
+		$sql .= ", email";
+  } else if ($row["requireSamlLogin"]) {
+		$sql .= ", IF(ISNULL(emailByLogin),email,IF(STRCMP(emailByLogin,?),'**hidden**',email)) as email";
+    $sqlArgs[] = $attributes["eduPersonPrincipalName"][0];
+  }
+  $sql .= " FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ?";
+  $sqlArgs[] = $planId;
+
+  $padAssStmt = $pdo->prepare($sql) or httperror($pdo->errorInfo());
+  $padAssStmt->execute($sqlArgs) or httperror($padAssStmt->errorInfo());
   $rows = $padAssStmt->fetchAll(PDO::FETCH_ASSOC);
   $result["assistant"] = Array();
   foreach ($rows as $row) {
@@ -75,15 +97,15 @@ switch ($_REQUEST["action"]):
  case "setCell":
    $pads = $pdo->prepare("SELECT requireSamlLogin, editPassword, ( (editEnd > NOW()) AND (editStart < NOW()) ) AS userEditable FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
    $pads->execute(Array($planId)) or httperror($pads->errorInfo());
-   $row = $pads->fetch(PDO::FETCH_ASSOC);
-   if ($row["userEditable"] == 0) {
+   $cfgRow = $pads->fetch(PDO::FETCH_ASSOC);
+   if ($cfgRow["userEditable"] == 0) {
      httperror("Dieser Plan ist nicht editierbar.");
    }
-   if ($row["requireSamlLogin"] && $loginMode != "basic" && !$isLogin) {
+   if ($cfgRow["requireSamlLogin"] && $loginMode != "basic" && !$isLogin) {
       httperror("Du warst nicht eingeloggt.");
    }
-   if ($row["editPassword"] === null && isset($_SESSION["skipCaptcha"]) && $_SESSION["skipCaptcha"] ) {
-   } elseif ($row["editPassword"] === null) {
+   if ($cfgRow["editPassword"] === null && isset($_SESSION["skipCaptcha"]) && $_SESSION["skipCaptcha"] ) {
+   } elseif ($cfgRow["editPassword"] === null) {
      // checkCaptcha($captchaId, $captcha)
      global $captchaCookie;
 
@@ -101,11 +123,22 @@ switch ($_REQUEST["action"]):
      $_SESSION["skipCaptcha"] = true;
    } else {
      $password = $_REQUEST["password"];
-     $passwordHash = $row["editPassword"];
+     $passwordHash = $cfgRow["editPassword"];
      if (!$pwObj->verifyPasswordHash($password, $passwordHash)) {
        httperror("Passwort war falsch");
      }
    }
+
+   if (isset($_REQUEST["email"]) && ($_REQUEST["email"] == "**hidden**"))
+     unset($_REQUEST["email"]);
+
+	 if (!isset($_REQUEST["email"]))
+     unset($_REQUEST["emailByLogin"]);
+   else if ($cfgRow["requireSamlLogin"])
+     $_REQUEST["emailByLogin"] = $attributes["eduPersonPrincipalName"][0];
+   else
+     $_REQUEST["emailByLogin"] = NULL;
+
    if (empty($_REQUEST["name"])) {
      $padAssStmt = $pdo->prepare("DELETE FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ? AND row = ? AND col = ?") or httperror($pdo->errorInfo());
      $padAssStmt->execute(Array($planId, $_REQUEST["row"], $_REQUEST["col"])) or httperror($padAssStmt->errorInfo());
@@ -119,7 +152,7 @@ switch ($_REQUEST["action"]):
        $padAssStmt = $pdo->prepare("INSERT INTO ${DB_PREFIX}pad_assistant (pad_id, row, col) VALUES (?, ?, ?)") or httperror($pdo->errorInfo());
        $padAssStmt->execute(Array($planId, $_REQUEST["row"], $_REQUEST["col"])) or httperror($padAssStmt->errorInfo());
      }
-     foreach (Array("name","organization","email") AS $key) {
+     foreach (Array("name","organization","email", "emailByLogin") AS $key) {
        if (!isset($_REQUEST[$key])) continue;
        $padAssStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_assistant SET $key = ? WHERE pad_id = ? AND row = ? AND col = ?") or httperror($pdo->errorInfo());
        $padAssStmt->execute(Array($_REQUEST[$key], $planId, $_REQUEST["row"], $_REQUEST["col"])) or httperror($padAssStmt->errorInfo());
@@ -127,8 +160,22 @@ switch ($_REQUEST["action"]):
      $padAssStmt = $pdo->prepare("INSERT INTO ${DB_PREFIX}pad_log (pad_id, row, col, text) VALUES ( ?, ?, ?, ?)") or httperror($pdo->errorInfo());
      $padAssStmt->execute(Array($planId, $_REQUEST["row"], $_REQUEST["col"], $_REQUEST["name"])) or httperror($padAssStmt->errorInfo());
    }
-   $padAssStmt = $pdo->prepare("SELECT row, col, name, organization, email FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ? AND row = ? AND col = ?") or httperror($pdo->errorInfo());
-   $padAssStmt->execute(Array($planId, $_REQUEST["row"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
+
+   $sql = "SELECT row, col, name, organization";
+   $sqlargs = Array();
+   if ($cfgRow["editPassword"] === null && !$cfgRow["requireSamlLogin"]) {
+		 $sql .= ", email";
+	 } else if ($cfgRow["editPassword"] === null && $cfgRow["requireSamlLogin"]) {
+	 	 $sql .= ", IF(ISNULL(emailByLogin),email,IF(STRCMP(emailByLogin,?),'**hidden**',email)) as email";
+     $sqlArgs[] = $attributes["eduPersonPrincipalName"][0];
+	 }
+   $sql .= " FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ? AND row = ? AND col = ?";
+   $sqlArgs[] = $planId;
+   $sqlArgs[] = $_REQUEST["row"];
+   $sqlArgs[] = $_REQUEST["col"];
+
+   $padAssStmt = $pdo->prepare($sql) or httperror($pdo->errorInfo());
+   $padAssStmt->execute($sqlArgs) or httperror($padAssStmt->errorInfo());
    $row = $padAssStmt->fetch(PDO::FETCH_ASSOC);
    $result["data"] = $row;
  break;
