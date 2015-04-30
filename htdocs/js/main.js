@@ -1330,11 +1330,11 @@ xp.switchToPlan = function(data) {
   var plan = xp.pads[group][section][planId];
   xp.currentPlanId = data;
 
-  if (plan.requireSamlLogin && !xp.login) {
+  if (!xp.login) {
     xp.gotoPlanAfterLoginData = data;
     return;
   }
-  if (plan.requireSamlLogin && !xp.login.isAuth && xp.login.loginMode != "basic") {
+  if (plan.requireSamlLogin == 1 && !xp.login.isAuth && xp.login.loginMode != "basic") {
     var returnUrl=self.location.protocol + '//' + self.location.host+self.location.pathname+'?planId='+planId;
     var loginUrl=xp.login.loginUrl;
     if (loginUrl.search("&ReturnTo") >= 0) {
@@ -1576,17 +1576,29 @@ xp.switchPlanListToSection = function(event) {
 }
 
 xp.onChangeAdminMode = function(event) {
-  xp.adminMode = $(this).prop('checked');
-  if (xp.adminMode) {
+  var newAdminMode = $(this).prop('checked');
+  if (newAdminMode) {
+    if (xp.currentPlanId !== null) {
+      var planId = xp.currentPlanId.id;
+      $.post('ajax/planmanage.php', {'action':'pingPlan', 'id': planId})
+       .success(function (values, textStatus, jqXHR) {
+         xp.adminMode = newAdminMode;
+         xp.initTable();
+         $('#saveplan').focus();
+       })
+       .error(xp.ajaxErrorHandler);
+    } else {
+      xp.adminMode = newAdminMode;
+      xp.initTable();
+      $('#saveplan').focus();
+    }
+  } else {
     if (xp.currentFocus != null) {
       xp.onCellConfirmHandler(xp.currentFocus.col, xp.currentFocus.row, true);
     }
-    $('#toolbar').hide();
-  } else {
-    $('#toolbar').show();
+    xp.adminMode = newAdminMode;
+    xp.initTable();
   }
-  xp.initTable();
-  $('#saveplan').focus();
 }
 
 xp.onDeletePlan = function(event) {

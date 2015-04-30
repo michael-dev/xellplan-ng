@@ -22,6 +22,9 @@ switch ($_REQUEST["action"]):
    $rows = $pads->fetchAll(PDO::FETCH_ASSOC);
    $result["meta"] = $rows[0];
  break;
+ case "pingPlan":
+   requirePadAdmin($_REQUEST["id"]);
+ break;
  case "deletePlan":
    requirePadAdmin($_REQUEST["id"]);
    $dropPlanStmt = $pdo->prepare("DELETE FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ?") or httperror($pdo->errorInfo());
