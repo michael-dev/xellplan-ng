@@ -1,6 +1,6 @@
 <?php
 
-global $pdo, $DB_PREFIX;
+global $pdo, $DB_PREFIX, $isLogin, $loginMode;
 include '../../lib/inc.all.php';
 
 $result = Array();
@@ -8,9 +8,12 @@ $planId = (int) $_REQUEST["id"];
 
 switch ($_REQUEST["action"]):
  case "listPlanData":
-  $pads = $pdo->prepare("SELECT editPassword FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
+  $pads = $pdo->prepare("SELECT editPassword, requireSamlLogin FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
   $pads->execute(Array($planId)) or httperror($pads->errorInfo());
   $cfgRow = $pads->fetch(PDO::FETCH_ASSOC);
+  if ($cfgRow["requireSamlLogin"] && $loginMode != "basic" && !$isLogin) {
+      httperror("Du warst nicht eingeloggt.");
+  }
   $padDataStmt = $pdo->prepare("SELECT row, col, text, classes, userEditField FROM ${DB_PREFIX}pad_data WHERE pad_id = ?") or httperror($pdo->errorInfo());
   $padDataStmt->execute(Array($planId)) or httperror($padDataStmt->errorInfo());
   $rows = $padDataStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -48,7 +51,7 @@ switch ($_REQUEST["action"]):
   if (count($result["log"]) == 0) { $result["log"] = new stdClass(); }
  break;
  case "listPlanDataEMail":
-  $pads = $pdo->prepare("SELECT editPassword FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
+  $pads = $pdo->prepare("SELECT requireSamlLogin, editPassword FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
   $pads->execute(Array($planId)) or httperror($pads->errorInfo());
   $row = $pads->fetch(PDO::FETCH_ASSOC);
   if ($row["editPassword"] !== null) {
@@ -57,6 +60,9 @@ switch ($_REQUEST["action"]):
     if (!$pwObj->verifyPasswordHash($password, $passwordHash)) {
       httperror("Passwort war falsch");
     }
+  }
+  if ($row["requireSamlLogin"] && $loginMode != "basic" && !$isLogin) {
+      httperror("Du warst nicht eingeloggt.");
   }
   $padAssStmt = $pdo->prepare("SELECT row, col, name, organization, email FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ?") or httperror($pdo->errorInfo());
   $padAssStmt->execute(Array($planId)) or httperror($padAssStmt->errorInfo());
@@ -67,11 +73,14 @@ switch ($_REQUEST["action"]):
   }
  break;
  case "setCell":
-   $pads = $pdo->prepare("SELECT editPassword, ( (editEnd > NOW()) AND (editStart < NOW()) ) AS userEditable FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
+   $pads = $pdo->prepare("SELECT requireSamlLogin, editPassword, ( (editEnd > NOW()) AND (editStart < NOW()) ) AS userEditable FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
    $pads->execute(Array($planId)) or httperror($pads->errorInfo());
    $row = $pads->fetch(PDO::FETCH_ASSOC);
    if ($row["userEditable"] == 0) {
      httperror("Dieser Plan ist nicht editierbar.");
+   }
+   if ($row["requireSamlLogin"] && $loginMode != "basic" && !$isLogin) {
+      httperror("Du warst nicht eingeloggt.");
    }
    if ($row["editPassword"] === null && isset($_SESSION["skipCaptcha"]) && $_SESSION["skipCaptcha"] ) {
    } elseif ($row["editPassword"] === null) {
