@@ -864,10 +864,12 @@ xp.initTable = function() {
   // init toolbar
   if (xp.adminMode) {
     $('#admintoolbar').show();
+    $('#admintoolbar2').show();
     $('#toolbar').show();
     $('#toolbar').css('visibility','hidden');
   } else {
     $('#admintoolbar').hide();
+    $('#admintoolbar2').hide();
     $('#toolbar').hide();
   }
   // add -1,-1 header field
@@ -1809,6 +1811,7 @@ xp.onLoginClick = function(event) {
 xp.init = function() {
   $('#toolbar').hide();
   $('#admintoolbar').hide();
+  $('#admintoolbar2').hide();
   $('#usertoolbar').hide();
   $('#tabs').tabs({activate: xp.onTabChange});
   xp.initSelection();
