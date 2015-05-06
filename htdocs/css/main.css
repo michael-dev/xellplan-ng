@@ -58,3 +58,7 @@ div:hover > .info { visibility: visible; }
 #var_subscribeHint { white-space: pre; font-weight: bold; }
 .multiselect { border: red thin solid; z-index: 5;}
 .float-to-right { float: right; }
+
+#admintoolbar > fieldset > div { float: left; width: 50%; min-width: 700px; }
+#admintoolbar > fieldset > div * { vertical-align: top; }
+#admintoolbar > fieldset > div#admintoolbarsep { clear:both; width: 100%; float: none; };

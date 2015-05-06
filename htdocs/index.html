@@ -79,23 +79,24 @@
         <button id="exportplan">Plan exportieren</button>
         <button id="exportplan2">Plan (vereinfacht) exportieren</button>
         <fieldset><legend>Meta-Daten</legend>
-        <div><label for="group_id">Gruppe</label>: <span id="admintoolbar_group_id"></span></div>
-        <div><label for="section_id">Bereich</label>: <input type="text" id="admintoolbar_section_id" name="section_id" placeholder="Vorlage"/></div>
-        <div><label for="id">Nr</label>: <span id="admintoolbar_id"></span></div>
-        <div><label for="name">Name</label>: <input type="text" id="admintoolbar_name" name="name" placeholder="Name"/></div>
-        <hr/>
-        <div><label for="comment">Kommentar</label>: <textarea type="text" id="admintoolbar_comment" name="comment"></textarea></div>
-        <div style="position:relative;"><label for="eventStart">Event-Start</label>: <input type="text" id="admintoolbar_eventStart" name="eventStart" placeholder="Veranstaltungsbeginn"/> <span class="info">Diese Angabe wird zur Sortierung der Pläne verwendet.</span></div>
-        <div style="position:relative;"><label for="eventEnd">Event-End</label>: <input type="text" id="admintoolbar_eventEnd" name="eventEnd" placeholder="Veranstaltungsende"/> <span class="info">Diese Angabe wird zur Sortierung der Pläne verwendet.</span></div>
-        <div style="position:relative;"><label for="editStart">Bearbeiten ab</label>: <input type="text" id="admintoolbar_editStart" name="editStart" placeholder="Dienste übernehmen ab"/> <span class="info">In diesem Zeitraum können Dienste übernommen werden. Dazu darf das Feld nicht leer bleiben.</span></div>
-        <div style="position:relative;"><label for="editEnd">Bearbeiten bis</label>: <input type="text" id="admintoolbar_editEnd" name="editEnd" placeholder="Dienste übernehmen bis"/>  <span class="info">In diesem Zeitraum können Dienste übernommen werden. Dazu darf das Feld nicht leer bleiben.</span></div>
-        <div><label for="creator">Angelegt von</label>: <span id="admintoolbar_creator"></span></div>
-        <div style="position:relative;"><label for="contact">Kontakt</label>: <input type="text" id="admintoolbar_contact" name="contact" placeholder="Kontakt"/><span class="info">Diese eMail-Adresse wird als Ansprechpartner für den Plan angezeigt.</span></div>
-        <div style="position:relative;"><label for="contactHint">Kontakt von Diensten</label>: <input type="text" id="admintoolbar_contactHint" name="contactHint" placeholder="Kontaktinformation, welche Dienste hinterlegen sollen."/><span class="info">Dieser Text wird beim Eintragen von Diensten angezeigt.</span></div>
-        <div style="position:relative;"><label for="subscribeHint">Dienstehinweis</label>: <textarea type="text" id="admintoolbar_subscribeHint" name="subscribeHint"></textarea><span class="info">Dieser Text wird beim Eintragen von Diensten angezeigt.</span></div>
-        <div style="position:relative;"><label for="requireSamlLogin">SAML-Login erforderlich?</label>: <select id="admintoolbar_requireSamlLogin" name="requireSamlLogin"><option value="0">Nein</option><option value="1">Ja</option></select><span class="info">Der Nutzer wird aufgefordert, sich zunächst mit SAML-Login (Uni-Login/sGIS-Login) einzuloggen. Der Zugriff auf die Kontaktdaten wird dann anhand des aktuellen Logins auf die eigenen Kontaktdaten eingeschränkt.</span></div>
-        <div><label for="editPassword">Passwort für Nutzer</label>: <input type="text" id="admintoolbar_editPassword" name="editPassword" placeholder="Passwort für Dienste"/></div>
-        <div><label for="adminPassword">Passwort für Admins</label>: <input type="text" id="admintoolbar_adminPassword" name="adminPassword" placeholder="Passwort für zusätzliche Admins"/></div>
+          <div><label for="group_id">Gruppe</label>: <span id="admintoolbar_group_id"></span></div>
+          <div><label for="section_id">Bereich</label>: <input type="text" id="admintoolbar_section_id" name="section_id" placeholder="Vorlage"/></div>
+          <div><label for="id">Nr</label>: <span id="admintoolbar_id"></span></div>
+          <div><label for="name">Name</label>: <input type="text" id="admintoolbar_name" name="name" placeholder="Name"/></div>
+          <div id="admintoolbarsep"></div>
+          <hr/>
+          <div style="position:relative;"><label for="eventStart">Event-Start</label>: <input type="text" id="admintoolbar_eventStart" name="eventStart" placeholder="Veranstaltungsbeginn"/> <span class="info">Diese Angabe wird zur Sortierung der Pläne verwendet.</span></div>
+          <div style="position:relative;"><label for="eventEnd">Event-End</label>: <input type="text" id="admintoolbar_eventEnd" name="eventEnd" placeholder="Veranstaltungsende"/> <span class="info">Diese Angabe wird zur Sortierung der Pläne verwendet.</span></div>
+          <div style="position:relative;"><label for="editStart">Bearbeiten ab</label>: <input type="text" id="admintoolbar_editStart" name="editStart" placeholder="Dienste übernehmen ab"/> <span class="info">In diesem Zeitraum können Dienste übernommen werden. Dazu darf das Feld nicht leer bleiben.</span></div>
+          <div style="position:relative;"><label for="editEnd">Bearbeiten bis</label>: <input type="text" id="admintoolbar_editEnd" name="editEnd" placeholder="Dienste übernehmen bis"/>  <span class="info">In diesem Zeitraum können Dienste übernommen werden. Dazu darf das Feld nicht leer bleiben.</span></div>
+          <div><label for="creator">Angelegt von</label>: <span id="admintoolbar_creator"></span></div>
+          <div style="position:relative;"><label for="contact">Kontakt</label>: <input type="text" id="admintoolbar_contact" name="contact" placeholder="Kontakt"/><span class="info">Diese eMail-Adresse wird als Ansprechpartner für den Plan angezeigt.</span></div>
+          <div><label for="editPassword">Passwort für Nutzer</label>: <input type="text" id="admintoolbar_editPassword" name="editPassword" placeholder="Passwort für Dienste"/></div>
+          <div><label for="adminPassword">Passwort für Admins</label>: <input type="text" id="admintoolbar_adminPassword" name="adminPassword" placeholder="Passwort für zusätzliche Admins"/></div>
+          <div><label for="comment">Kommentar</label>: <textarea type="text" id="admintoolbar_comment" name="comment"></textarea></div>
+          <div style="position:relative;"><label for="contactHint">Kontakt von Diensten</label>: <input type="text" id="admintoolbar_contactHint" name="contactHint" placeholder="Kontaktinformation, welche Dienste hinterlegen sollen."/><span class="info">Dieser Text wird beim Eintragen von Diensten angezeigt.</span></div>
+          <div style="position:relative;"><label for="subscribeHint">Dienstehinweis</label>: <textarea type="text" id="admintoolbar_subscribeHint" name="subscribeHint"></textarea><span class="info">Dieser Text wird beim Eintragen von Diensten angezeigt.</span></div>
+          <div style="position:relative;"><label for="requireSamlLogin">SAML-Login erforderlich?</label>: <select id="admintoolbar_requireSamlLogin" name="requireSamlLogin"><option value="0">Nein</option><option value="1">Ja</option></select><span class="info">Der Nutzer wird aufgefordert, sich zunächst mit SAML-Login (Uni-Login/sGIS-Login) einzuloggen. Der Zugriff auf die Kontaktdaten wird dann anhand des aktuellen Logins auf die eigenen Kontaktdaten eingeschränkt.</span></div>
         </fieldset>
       </span>
       <span id="toolbar" class="ui-widget-header ui-corner-all">
