@@ -17,6 +17,7 @@ xp.assWithMailPw = false;
 xp.currentFocus = null;
 xp.currentMultiFocus = [];
 xp.currentMultiFocusStart = null;
+xp.currentMultiFocusLast = null;
 xp.users = {}
 xp.groups = {}
 xp.pads = {};
@@ -704,7 +705,7 @@ xp.clearMultiFocus = function() {
     $('#'+cellId).removeClass('multiselect');
   }
   xp.currentMultiFocus = [];
-  $('body').off('keydown.multiEsc');
+  $('body').off('keydown.multiGlobal');
   $('#toolbar').css('visibility','hidden');
   xp.stickyToolbarDeinit();
 }
@@ -720,6 +721,7 @@ xp.onCellClickForAdmin = function(event) {
   if (event.data.row + 1 >= xp.numRow) {
     xp.addCells(xp.numCol, xp.numRow + 1);
   }
+  xp.currentMultiFocusLast = null;
   if (event.ctrlKey) {
     xp.currentMultiFocusStart = null;
     if (xp.currentFocus) {
@@ -729,7 +731,7 @@ xp.onCellClickForAdmin = function(event) {
     }
     xp.addToMultiFocus(event.data.col, event.data.row);
     xp.configureMultiToolbar()
-    $('body').on('keydown.multiEsc', xp.onKey);
+    $('body').on('keydown.multiGlobal', xp.onKey);
   } else if (event.shiftKey) {
     xp.clearMultiFocus();
     if (xp.currentFocus) {
@@ -747,7 +749,8 @@ xp.onCellClickForAdmin = function(event) {
         }
       }
       xp.configureMultiToolbar()
-      $('body').on('keydown.multiEsc', xp.onKey);
+      $('body').on('keydown.multiGlobal', xp.onKey);
+      xp.currentMultiFocusLast = {"col": event.data.col, "row" : event.data.row };
     }
   } else {
     xp.currentMultiFocusStart = null;
@@ -764,16 +767,47 @@ xp.onCellClickForAdmin = function(event) {
   event.stopPropagation();
 }
 
+/* keypress handler has key id in keyCode instead of which */
 xp.onKey = function(event) {
-  if (event.which != 27) {
-    return;
+  if (event.which == 27 && !event.shiftKey && !event.ctrlKey) {
+    event.stopPropagation();
+    xp.clearMultiFocus();
+    xp.currentMultiFocusStart = null;
   }
-  if (event.shiftKey || event.ctrlKey) {
-    return;
+  if ((event.which == 37 || event.which == 38 ||  event.which == 39 || event.which == 40)
+       && event.shiftKey && xp.currentMultiFocusStart && xp.currentMultiFocusLast) {
+    var newcol = xp.currentMultiFocusLast.col;
+    var newrow = xp.currentMultiFocusLast.row;
+    var doMove = true;
+
+    if (event.which == 39) {
+      newcol++;
+    } else if (event.which == 37 && newcol > 0) {
+      newcol--;
+    } else if (event.which == 40) {
+      newrow++;
+    } else if (event.which == 38 && newrow > 0) {
+      newrow--;
+    } else {
+      doMove = false;
+    }
+
+    xp.clearMultiFocus();
+    xp.currentMultiFocusLast = {"col": newcol, "row": newrow};
+    var colMin = Math.min(newcol, xp.currentMultiFocusStart.col);
+    var colMax = Math.max(newcol, xp.currentMultiFocusStart.col);
+    var rowMin = Math.min(newrow, xp.currentMultiFocusStart.row);
+    var rowMax = Math.max(newrow, xp.currentMultiFocusStart.row);
+    for (var col = colMin; col <= colMax; col++) {
+      for (var row = rowMin; row <= rowMax; row++) {
+        xp.addToMultiFocus(col, row);
+      }
+    }
+    xp.configureMultiToolbar()
+    $('body').on('keydown.multiGlobal', xp.onKey);
+    xp.currentMultiFocusLast = {"col": event.data.col, "row" : event.data.row };
+    event.stopPropagation();
   }
-  event.stopPropagation();
-  xp.clearMultiFocus();
-  xp.currentMultiFocusStart = null;
   return false;
 }
 
@@ -788,7 +822,7 @@ xp.onCellKey = function(event) {
   {
     return;
   }
-  if ((event.shiftKey && event.which != 9) || event.ctrlKey) {
+  if ((event.shiftKey && event.which == 13) || (event.shiftKey && event.which == 27) || event.ctrlKey) {
     return;
   }
   event.stopPropagation();
@@ -810,7 +844,22 @@ xp.onCellKey = function(event) {
     doMove = false;
   }
 
-  if (doMove) {
+  if (event.shiftKey && event.which != 9 && doMove) {
+    xp.clearMultiFocus();
+    var colMin = Math.min(newcol, event.data.col);
+    var colMax = Math.max(newcol, event.data.col);
+    var rowMin = Math.min(newrow, event.data.row);
+    var rowMax = Math.max(newrow, event.data.row);
+    xp.currentMultiFocusStart = {"col": event.data.col, "row": event.data.row};
+    xp.currentMultiFocusLast = {"col": newcol, "row": newrow};
+    for (var col = colMin; col <= colMax; col++) {
+      for (var row = rowMin; row <= rowMax; row++) {
+        xp.addToMultiFocus(col, row);
+      }
+    }
+    xp.configureMultiToolbar()
+    $('body').on('keydown.multiGlobal', xp.onKey);
+  } else if (doMove) {
     var cellId2 = xp.getCellId(newcol, newrow, true);
     var cellId1 = xp.getCellId(newcol, newrow, false);
     if ($('#'+cellId2).length > 0) {
