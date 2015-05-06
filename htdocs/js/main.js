@@ -14,7 +14,9 @@ xp.paddingWidth = 2;
 xp.data = {};
 xp.ass = {};
 xp.assWithMailPw = false;
+xp.currentFocus = null;
 xp.currentMultiFocus = [];
+xp.currentMultiFocusStart = null;
 xp.users = {}
 xp.groups = {}
 xp.pads = {};
@@ -609,6 +611,22 @@ xp.onCancelVariable = function (event) {
   xp.currentFocus = null;
 }
 
+xp.addToMultiFocus = function(col, row) {
+  var cellId = xp.getCellId(col, row, 0);
+  xp.currentMultiFocus.push({"col":col,"row":row})
+  $('#'+cellId).addClass('multiselect');
+}
+
+xp.clearMultiFocus = function() {
+  for (var i=0; i < xp.currentMultiFocus.length; i++) {
+    var cellId = xp.getCellId(xp.currentMultiFocus[i].col, xp.currentMultiFocus[i].row, 0);
+    $('#'+cellId).removeClass('multiselect');
+  }
+  xp.currentMultiFocus = [];
+  $('body').off('keydown.multiEsc');
+  $('#toolbar').css('visibility','hidden');
+}
+
 xp.onCellClickForAdmin = function(event) {
   /* save current scroll position */
   var scrollTop = $(window).scrollTop();
@@ -621,42 +639,37 @@ xp.onCellClickForAdmin = function(event) {
     xp.addCells(xp.numCol, xp.numRow + 1);
   }
   if (event.ctrlKey) {
-    if (xp.currentFocus)
+    xp.currentMultiFocusStart = null;
+    if (xp.currentFocus) {
+      var focus = xp.currentFocus;
       xp.onCellConfirmHandler(xp.currentFocus.col, xp.currentFocus.row, true);
-    var cellId = xp.getCellId(event.data.col, event.data.row, 0);
-    xp.currentMultiFocus.push({"col":event.data.col,"row":event.data.row})
-    $('#'+cellId).addClass('multiselect');
+      xp.addToMultiFocus(focus.col, focus.row);
+    }
+    xp.addToMultiFocus(event.data.col, event.data.row);
     xp.configureMultiToolbar()
     $('body').on('keydown.multiEsc', xp.onKey);
   } else if (event.shiftKey) {
-    for (var i=0; i < xp.currentMultiFocus.length; i++) {
-      var cellId = xp.getCellId(xp.currentMultiFocus[i].col, xp.currentMultiFocus[i].row, 0);
-      $('#'+cellId).removeClass('multiselect');
-    }
-    xp.currentMultiFocus = [];
+    xp.clearMultiFocus();
     if (xp.currentFocus) {
-      var colMin = Math.min(xp.currentFocus.col, event.data.col);
-      var colMax = Math.max(xp.currentFocus.col, event.data.col);
-      var rowMin = Math.min(xp.currentFocus.row, event.data.row);
-      var rowMax = Math.max(xp.currentFocus.row, event.data.row);
-      xp.onCellConfirmHandler(xp.currentFocus.col, xp.currentFocus.row, true);
+      xp.currentMultiFocusStart = xp.currentFocus;
+    }
+    if (xp.currentMultiFocusStart) {
+      var colMin = Math.min(xp.currentMultiFocusStart.col, event.data.col);
+      var colMax = Math.max(xp.currentMultiFocusStart.col, event.data.col);
+      var rowMin = Math.min(xp.currentMultiFocusStart.row, event.data.row);
+      var rowMax = Math.max(xp.currentMultiFocusStart.row, event.data.row);
+      xp.onCellConfirmHandler(xp.currentMultiFocusStart.col, xp.currentMultiFocusStart.row, true);
       for (var col = colMin; col <= colMax; col++) {
         for (var row = rowMin; row <= rowMax; row++) {
-          var cellId = xp.getCellId(col, row, 0);
-          xp.currentMultiFocus.push({"col":col,"row":row})
-          $('#'+cellId).addClass('multiselect');
+          xp.addToMultiFocus(col, row);
         }
       }
       xp.configureMultiToolbar()
       $('body').on('keydown.multiEsc', xp.onKey);
     }
   } else {
-    for (var i=0; i < xp.currentMultiFocus.length; i++) {
-      var cellId = xp.getCellId(xp.currentMultiFocus[i].col, xp.currentMultiFocus[i].row, 0);
-      $('#'+cellId).removeClass('multiselect');
-    }
-    xp.currentMultiFocus = [];
-    $('body').off('keydown.multiEsc');
+    xp.currentMultiFocusStart = null;
+    xp.clearMultiFocus();
     if ((event.data.col != -1) && (event.data.row != -1)) {
       xp.addCell(event.data.col,event.data.row,2);
     }
@@ -677,13 +690,8 @@ xp.onKey = function(event) {
     return;
   }
   event.stopPropagation();
-  for (var i=0; i < xp.currentMultiFocus.length; i++) {
-    var cellId = xp.getCellId(xp.currentMultiFocus[i].col, xp.currentMultiFocus[i].row, 0);
-    $('#'+cellId).removeClass('multiselect');
-  }
-  xp.currentMultiFocus = [];
-  $('body').off('keydown.multiEsc');
-  $('#toolbar').css('visibility','hidden');
+  xp.clearMultiFocus();
+  xp.currentMultiFocusStart = null;
   return false;
 }
 

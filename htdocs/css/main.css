@@ -44,5 +44,5 @@ div.tab { position: relative; }
 #admintoolbar input, #admintoolbar select, #newplanset input, #newplanset select { min-width: 300px; }
 div:hover > .info { visibility: visible; }
 #var_subscribeHint { white-space: pre; font-weight: bold; }
-.multiselect { border: blue thin solid; z-index: 5;}
+.multiselect { border: red thin solid; z-index: 5;}
 .float-to-right { float: right; }
