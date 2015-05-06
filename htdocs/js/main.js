@@ -760,8 +760,8 @@ xp.onCellConfirm = function(event) {
 xp.onCellConfirmHandler = function(col, row, cfrm, sync) {
   var text = xp.destroyCell(col, row, true);
   xp.currentFocus = null;
-  $('#toolbar').css('visibility','hidden');
   xp.stickyToolbarDeinit();
+  $('#toolbar').css('visibility','hidden');
   if (cfrm) {
     xp.updateCell(col, row, text, false);
     xp.saveCell(col, row, sync);
