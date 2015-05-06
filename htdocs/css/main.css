@@ -72,3 +72,10 @@ div:hover > .info { visibility: visible; }
     border-top: 0;
 }
 
+input.disabled {
+    user-select : none;
+    -moz-user-select : none;
+    -webkit-user-select : none;
+    color: gray;
+    cursor: pointer;
+}

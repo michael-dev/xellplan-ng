@@ -453,10 +453,29 @@ xp.onDisplayVariable = function(event) {
       success: function (values, status, req) {
                  xp.ass = values.assistant;
                  xp.assWithMailPw = pw;
+                 var email;
                  if (xp.ass[row] && xp.ass[row][col]) {
-                   $('#var_mail').val(xp.ass[row][col].email);
+                   email = xp.ass[row][col].email;
                  } else {
-                   $('#var_mail').val('');
+                   email = "";
+                   if (xp.login.email) {
+                     email = xp.login.email;
+                   }
+                 }
+                 var emails = [];
+                 if (email != "**hidden**") {
+                   emails = xp.split(email, "|", xp.contactFieldsList.length);
+                   for (var i = 0; i < xp.contactFieldsList.length; i++) {
+                     $('#var_mail'+i).val(emails[i]);
+                     $('#var_mail'+i).addClass("disabled");
+                     $('#var_mail'+i).off('focus.onEnableCell');
+                   }
+                 } else {
+                   for (var i = 0; i < xp.contactFieldsList.length; i++) {
+                     $('#var_mail'+i).val("**hidden**");
+                     $('#var_mail'+i).removeClass("disabled");
+                     $('#var_mail'+i).on('focus.onEnableCell', xp.onEnableCell);
+                   }
                  }
                  $("#userdialog").dialog("open");
 /*
@@ -470,6 +489,32 @@ xp.onDisplayVariable = function(event) {
       error: xp.ajaxErrorHandler,
       async:   false
  });
+}
+
+xp.onEnableCell = function(event) {
+  if (confirm("Alle Kontaktdaten löschen und neu eingeben?")) {
+    var email = "";
+    if (xp.login.email) {
+      email = xp.login.email;
+    }
+    var emails = xp.split(email, "|", xp.contactFieldsList.length);
+    for (var i = 0; i < xp.contactFieldsList.length; i++) {
+      $('#var_mail'+i).val(emails[i]);
+      $('#var_mail'+i).removeClass("disabled");
+      $('#var_mail'+i).off('focus.onEnableCell');
+    }
+    return false;
+  }
+  $( this ).blur();
+  return false;
+}
+
+xp.split = function (str, sep, numChunk) {
+  var ret = str.split("sep");
+  for (var i = ret.length - 1; i >= numChunk; i--) {
+    ret[i-1] += sep + ret.pop();
+  }
+  return ret;
 }
 
 xp.onCellClickForUser = function(event) {
@@ -509,16 +554,33 @@ xp.onCellClickForUser = function(event) {
   }
 
   xp.currentFocus = event.data;
+  var email;
   if (xp.ass[row] && xp.ass[row][col]) {
     $('#var_name').val(xp.ass[row][col].name);
     $('#var_organization').val(xp.ass[row][col].organization);
-    $('#var_mail').val(xp.ass[row][col].email);
+    email = xp.ass[row][col].email;
   } else {
     $('#var_name').val('');
     $('#var_organization').val('');
-    $('#var_mail').val('');
+    email = "";
     if (xp.login.email) {
-      $('#var_mail').val(xp.login.email);
+      email = xp.login.email;
+    }
+  }
+  var contactFields = xp.contactFieldsList;
+  var emails = [];
+  if (email != "**hidden**") {
+    emails = xp.split(email, "|", contactFields.length);
+    for (var i = 0; i < contactFields.length; i++) {
+      $('#var_mail'+i).val(emails[i]);
+      $('#var_mail'+i).removeClass("disabled");
+      $('#var_mail'+i).off('focus.onEnableCell');
+    }
+  } else {
+    for (var i = 0; i < contactFields.length; i++) {
+      $('#var_mail'+i).val("**hidden**");
+      $('#var_mail'+i).addClass("disabled");
+      $('#var_mail'+i).on('focus.onEnableCell', xp.onEnableCell);
     }
   }
 
@@ -563,7 +625,19 @@ xp.onSaveVariable = function (event) {
   var planId = xp.currentPlanId.id;
   var var_name = $('#var_name').val();
   var var_organization = $('#var_organization').val();
-  var var_email = $('#var_mail').val();
+
+  var var_email = '';
+  if ($('#var_mail0').hasClass('disabled')) {
+    var_email = '**hidden**';
+  } else {
+    for (var i = 0; i < xp.contactFieldsList.length; i++) {
+      if (i > 0) {
+        var_email += "|";
+      }
+      var_email += $('#var_mail'+i).val().split("|").join("");
+    }
+  }
+
   var var_captcha = $('#var_captcha').val();
   var var_password = $('#var_password').val();
   var plan = xp.pads[xp.currentPlanId.group][xp.currentPlanId.section][planId];
@@ -1419,11 +1493,28 @@ xp.configureUserToolbar = function() {
   $('#footer_editStart').text(plan.editStart);
   $('#footer_editEnd').text(plan.editEnd);
   $('#var_subscribeHint').text(plan.subscribeHint);
+
+  xp.contactFieldsList = plan.contactFields.split("|");
+  $('#userdialogemails').empty();
+  if (xp.contactFieldsList.length < 1)
+    xp.contactFieldsList = ["Kontakt"];
+  for (var i = 0; i < xp.contactFieldsList.length; i++) {
+    var item = $('<div/>');
+    $('<label/>').attr('for',"mail"+i).text(xp.contactFieldsList[i]).appendTo(item);
+    item.append(" ");
+    $('<input type="text"/>').attr('name',"mail"+i).attr("id","var_mail"+i).appendTo(item);
+    if (i == 0) {
+      $('<span id="var_contactHint"></span>').appendTo(item);
+    }
+    $('#userdialogemails').append(item);
+  }
+
   var contactHint = plan.contactHint;
   if (contactHint && contactHint.length > 0) {
     contactHint = '('+contactHint+')';
   }
   $('#var_contactHint').text(contactHint);
+
   var contact = plan.contact;
   if (contact == '' || !contact) {
     contact = plan.creator;
