@@ -688,19 +688,41 @@ xp.onKey = function(event) {
 }
 
 xp.onCellKey = function(event) {
-  if (event.which != 13 &&
-      event.which != 9 &&
-      event.which != 27) {
+  if (event.which != 13 && // enter
+      event.which != 9 &&  // tab
+      event.which != 27 && // esc
+      event.which != 37 && // left
+      event.which != 38 && // up
+      event.which != 39 && // right
+      event.which != 40) // down
+  {
     return;
   }
-  if (event.shiftKey || event.ctrlKey) {
+  if ((event.shiftKey && event.which != 9) || event.ctrlKey) {
     return;
   }
   event.stopPropagation();
   xp.onCellConfirmHandler(event.data.col, event.data.row, (event.which != 27));
-  if (event.which == 9) {
-    var cellId2 = xp.getCellId(event.data.col + 1, event.data.row, true);
-    var cellId1 = xp.getCellId(event.data.col + 1, event.data.row, false);
+
+  var newcol = event.data.col;
+  var newrow = event.data.row;
+  var doMove = true;
+
+  if ((event.which == 9 && !event.shiftKey) || event.which == 39) {
+    newcol++;
+  } else if (((event.which == 9 && event.shiftKey) || event.which == 37) && newcol > 0) {
+    newcol--;
+  } else if (event.which == 13 || event.which == 40) {
+    newrow++;
+  } else if (event.which == 38 && newrow > 0) {
+    newrow--;
+  } else {
+    doMove = false;
+  }
+
+  if (doMove) {
+    var cellId2 = xp.getCellId(newcol, newrow, true);
+    var cellId1 = xp.getCellId(newcol, newrow, false);
     if ($('#'+cellId2).length > 0) {
       $('#'+cellId2).click();
     } else {
