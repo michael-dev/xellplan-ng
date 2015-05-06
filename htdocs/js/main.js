@@ -467,13 +467,13 @@ xp.onDisplayVariable = function(event) {
                    emails = xp.split(email, "|", xp.contactFieldsList.length);
                    for (var i = 0; i < xp.contactFieldsList.length; i++) {
                      $('#var_mail'+i).val(emails[i]);
-                     $('#var_mail'+i).addClass("disabled");
+                     $('#var_mail'+i).removeClass("disabled");
                      $('#var_mail'+i).off('focus.onEnableCell');
                    }
                  } else {
                    for (var i = 0; i < xp.contactFieldsList.length; i++) {
                      $('#var_mail'+i).val("**hidden**");
-                     $('#var_mail'+i).removeClass("disabled");
+                     $('#var_mail'+i).addClass("disabled");
                      $('#var_mail'+i).on('focus.onEnableCell', xp.onEnableCell);
                    }
                  }
@@ -510,7 +510,9 @@ xp.onEnableCell = function(event) {
 }
 
 xp.split = function (str, sep, numChunk) {
-  var ret = str.split("sep");
+  if (!str)
+    return [];
+  var ret = str.split(sep);
   for (var i = ret.length - 1; i >= numChunk; i--) {
     ret[i-1] += sep + ret.pop();
   }
