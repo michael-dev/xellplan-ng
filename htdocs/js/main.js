@@ -2,9 +2,9 @@ var xp = { }
 
 xp.numRow = 10;
 xp.numCol = 10;
-xp.defColWidth = 80;
+xp.defColWidth = 60;
 xp.defColRound = 10;
-xp.defRowHeight = 20;
+xp.defRowHeight = 16;
 xp.defRowRound = 10;
 xp.containerId = 'content';
 xp.colWidths = { '-1' : 30 };
@@ -26,6 +26,7 @@ xp.firstRun = true;
 xp.log = {};
 xp.login = null;
 xp.loginTimer = null;
+xp.loginRequestPending = false;
 xp.gotoPlanAfterLoginData = null;
 xp.orgs = [];
 xp.needCaptcha = true;
@@ -1763,6 +1764,10 @@ xp.switchTplListToSection = function(event) {
 }
 
 xp.setLoginStatus = function() {
+  if (xp.loginRequestPending) {
+    return;
+  }
+  xp.loginRequestPending = true;
   $.post('ajax/login.php', {url: self.location.href})
    .success(function (values, textStatus, jqXHR) {
     xp.login = values;
@@ -1789,6 +1794,9 @@ xp.setLoginStatus = function() {
       xp.gotoPlanAfterLoginData = null;
       xp.switchToPlan(data);
     }
+  })
+  .always(function (values, textStatus, jqXHR) {
+    xp.loginRequestPending = false;
   });
   // no error handler -> would be called too often
 }
