@@ -8,7 +8,7 @@ $planId = (int) $_REQUEST["id"];
 
 switch ($_REQUEST["action"]):
  case "listPlanData":
-  $pads = $pdo->prepare("SELECT editPassword, requireSamlLogin FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
+  $pads = $pdo->prepare("SELECT editPassword, requireSamlLogin, alwaysHideContacts FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
   $pads->execute(Array($planId)) or httperror($pads->errorInfo());
   $cfgRow = $pads->fetch(PDO::FETCH_ASSOC);
   if ($cfgRow["requireSamlLogin"] && $loginMode != "basic" && !$isLogin) {
@@ -25,7 +25,9 @@ switch ($_REQUEST["action"]):
 
   $sql = "SELECT row, col, name, organization";
   $sqlargs = Array();
-  if ($cfgRow["editPassword"] === null && !$cfgRow["requireSamlLogin"]) {
+  if ($cfgRow["alwaysHideContacts"]) {
+		$sql .= ", '**hidden**' as email";
+  } else if ($cfgRow["editPassword"] === null && !$cfgRow["requireSamlLogin"]) {
 		$sql .= ", email";
   } else if ($cfgRow["editPassword"] === null && $cfgRow["requireSamlLogin"]) {
 		$sql .= ", IF(ISNULL(emailByLogin),email,IF(STRCMP(emailByLogin,?),'**hidden**',email)) as email";
@@ -62,7 +64,7 @@ switch ($_REQUEST["action"]):
   if (count($result["log"]) == 0) { $result["log"] = new stdClass(); }
  break;
  case "listPlanDataEMail":
-  $pads = $pdo->prepare("SELECT requireSamlLogin, editPassword FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
+  $pads = $pdo->prepare("SELECT alwaysHideContacts, requireSamlLogin, editPassword FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
   $pads->execute(Array($planId)) or httperror($pads->errorInfo());
   $row = $pads->fetch(PDO::FETCH_ASSOC);
   if ($row["editPassword"] !== null) {
@@ -77,7 +79,9 @@ switch ($_REQUEST["action"]):
   }
   $sql = "SELECT row, col, name, organization";
   $sqlargs = Array();
-  if (!$row["requireSamlLogin"]) {
+  if ($cfgRow["alwaysHideContacts"]) {
+		$sql .= ", '**hidden**' as email";
+  } else if (!$row["requireSamlLogin"]) {
 		$sql .= ", email";
   } else if ($row["requireSamlLogin"]) {
 		$sql .= ", IF(ISNULL(emailByLogin),email,IF(STRCMP(emailByLogin,?),'**hidden**',email)) as email";
@@ -95,7 +99,7 @@ switch ($_REQUEST["action"]):
   }
  break;
  case "setCell":
-   $pads = $pdo->prepare("SELECT requireSamlLogin, editPassword, ( (editEnd > NOW()) AND (editStart < NOW()) ) AS userEditable FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
+   $pads = $pdo->prepare("SELECT alwaysHideContacts, requireSamlLogin, editPassword, ( (editEnd > NOW()) AND (editStart < NOW()) ) AS userEditable FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
    $pads->execute(Array($planId)) or httperror($pads->errorInfo());
    $cfgRow = $pads->fetch(PDO::FETCH_ASSOC);
    if ($cfgRow["userEditable"] == 0) {
@@ -163,7 +167,9 @@ switch ($_REQUEST["action"]):
 
    $sql = "SELECT row, col, name, organization";
    $sqlargs = Array();
-   if ($cfgRow["editPassword"] === null && !$cfgRow["requireSamlLogin"]) {
+   if ($cfgRow["alwaysHideContacts"]) {
+	   $sql .= ", '**hidden**' as email";
+   } else if ($cfgRow["editPassword"] === null && !$cfgRow["requireSamlLogin"]) {
 		 $sql .= ", email";
 	 } else if ($cfgRow["editPassword"] === null && $cfgRow["requireSamlLogin"]) {
 	 	 $sql .= ", IF(ISNULL(emailByLogin),email,IF(STRCMP(emailByLogin,?),'**hidden**',email)) as email";

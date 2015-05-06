@@ -404,6 +404,8 @@ xp.configureToolbar = function(col,row) {
   $( "#save" ).unbind('click');
   $( "#save" ).show();
   $( "#save" ).click({'col': col, 'row':row}, xp.onCellConfirm);
+
+  xp.stickyToolbarInit();
 }
 
 xp.configureMultiToolbar = function() {
@@ -422,6 +424,8 @@ xp.configureMultiToolbar = function() {
   $( "#fontsize" ).buttonset("refresh");
   $( "#save" ).unbind('click');
   $( "#save" ).hide();
+
+  xp.stickyToolbarInit();
 }
 
 xp.configureOrgs = function() {
@@ -626,6 +630,7 @@ xp.clearMultiFocus = function() {
   xp.currentMultiFocus = [];
   $('body').off('keydown.multiEsc');
   $('#toolbar').css('visibility','hidden');
+  xp.stickyToolbarDeinit();
 }
 
 xp.onCellClickForAdmin = function(event) {
@@ -756,6 +761,7 @@ xp.onCellConfirmHandler = function(col, row, cfrm, sync) {
   var text = xp.destroyCell(col, row, true);
   xp.currentFocus = null;
   $('#toolbar').css('visibility','hidden');
+  xp.stickyToolbarDeinit();
   if (cfrm) {
     xp.updateCell(col, row, text, false);
     xp.saveCell(col, row, sync);
@@ -872,6 +878,7 @@ xp.initTable = function() {
     $('#admintoolbar2').hide();
     $('#toolbar').hide();
   }
+  xp.stickyToolbarDeinit();
   // add -1,-1 header field
   xp.clearTable();
   xp.addCell(-1, -1);
@@ -1487,6 +1494,8 @@ xp.configureAdminToolbar = function() {
   $('#admintoolbar_contact').val(plan.contact);
   $('#admintoolbar_contactHint').val(plan.contactHint);
   $('#admintoolbar_subscribeHint').val(plan.subscribeHint);
+  $('#admintoolbar_contactFields').val(plan.contactFields);
+  $('#admintoolbar_alwaysHideContacts').val(plan.alwaysHideContacts);
   if (xp.login.loginMode != "basic") {
     $('#admintoolbar_requireSamlLogin').val(plan.requireSamlLogin);
     $('#admintoolbar_requireSamlLogin').show();
@@ -1679,6 +1688,8 @@ xp.onSavePlan = function(event) {
   data.contact = $('#admintoolbar_contact').val();
   data.contactHint = $('#admintoolbar_contactHint').val();
   data.subscribeHint = $('#admintoolbar_subscribeHint').val();
+  data.contactFields = $('#admintoolbar_contactFields').val();
+  data.alwaysHideContacts = $('#admintoolbar_alwaysHideContacts').val();
   data.editPassword = $('#admintoolbar_editPassword').val();
   data.adminPassword = $('#admintoolbar_adminPassword').val();
   if (xp.login.loginMode != "basic") {
@@ -1807,6 +1818,28 @@ xp.onLoginClick = function(event) {
   // prompt for username/password
   return false;
 }
+
+xp.stickyToolbarInit = function() {
+  xp.stickyToolbarTop = $('#toolbar').offset().top;
+  xp.stickyToolbar();
+  $(window).on('scroll.xp', xp.stickyToolbar);
+}
+
+xp.stickyToolbarDeinit = function() {
+  $(window).off('scroll.xp');
+}
+
+xp.stickyToolbar = function() {
+  var scrollTop = $(window).scrollTop();
+  var scrollLeft = $(window).scrollLeft();
+  if (scrollTop > xp.stickyToolbarTop) {
+    $('#toolbar').addClass('sticky');
+    $('#toolbar').css("margin-left", "");
+  } else {
+    $('#toolbar').removeClass('sticky');
+    $('#toolbar').css("margin-left", scrollLeft);
+  }
+};
 
 xp.init = function() {
   $('#toolbar').hide();

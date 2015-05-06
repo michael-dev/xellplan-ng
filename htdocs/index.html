@@ -97,18 +97,20 @@
         <div><label for="adminPassword">Passwort für Admins</label>: <input type="text" id="admintoolbar_adminPassword" name="adminPassword" placeholder="Passwort für zusätzliche Admins"/></div>
         <div><label for="comment">Kommentar</label>: <textarea type="text" id="admintoolbar_comment" name="comment"></textarea></div>
         <div style="position:relative;"><label for="contactHint">Kontakt von Diensten</label>: <input type="text" id="admintoolbar_contactHint" name="contactHint" placeholder="Kontaktinformation, welche Dienste hinterlegen sollen."/><span class="info">Dieser Text wird beim Eintragen von Diensten angezeigt.</span></div>
+        <div style="position:relative;"><label for="contactFields">Kontaktfelder von Diensten</label>: <input type="text" id="admintoolbar_contactFields" name="contactFields" placeholder="Feldnamen für Kontakte"/><span class="info">Die Kontaktfelder werden anhand dieses Textfeldes erzeugt. Trennzeichen: |.</span></div>
         <div style="position:relative;"><label for="subscribeHint">Dienstehinweis</label>: <textarea type="text" id="admintoolbar_subscribeHint" name="subscribeHint"></textarea><span class="info">Dieser Text wird beim Eintragen von Diensten angezeigt.</span></div>
         <div style="position:relative;"><label for="requireSamlLogin">SAML-Login erforderlich?</label>: <select id="admintoolbar_requireSamlLogin" name="requireSamlLogin"><option value="0">Nein</option><option value="1">Ja</option></select><span class="info">Der Nutzer wird aufgefordert, sich zunächst mit SAML-Login (Uni-Login/sGIS-Login) einzuloggen. Der Zugriff auf die Kontaktdaten wird dann anhand des aktuellen Logins auf die eigenen Kontaktdaten eingeschränkt.</span></div>
+        <div style="position:relative;"><label for="alwaysHideContacts">Kontaktdaten immer verbergen?</label>: <select id="admintoolbar_alwaysHideContacts" name="alwaysHideContacts"><option value="0">Nein</option><option value="1">Ja</option></select><span class="info">Die vom Nutzer eingegebenen Kontaktdaten werden vor allen Nutzern verborgen.</span></div>
         <div class="admintoolbarsep"></div>
       </span>
       <span id="toolbar" class="ui-widget-header ui-corner-all">
         <button title="Speichern" id="save">save</button>
-     
+
         <input type="checkbox" id="italics" value='italics'/><label title="Kursiv" for="italics">K</label>
         <input type="checkbox" id="bold" value='bold'/><label title="Fett" for="bold">F</label>
         <input type="checkbox" id="underline" value='underline' /><label title="Unterstrichen" for="underline">U</label>
         <input type="checkbox" id="variable" value='variable' /><label title="Dienstefeld" for="variable">V</label>
-     
+
         <span id="fontsize">
           <input type="radio" id="fontsize0" name="fontsize" value='smallFontsize'/><label for="fontsize0" title='kleine Schriftgröße'>-1</label>
           <input type="radio" id="fontsize1" name="fontsize" value='normalFontsize' checked="checked" /><label for="fontsize1" title='normale Schriftgröße'>0</label>

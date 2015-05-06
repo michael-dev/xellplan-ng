@@ -61,4 +61,14 @@ div:hover > .info { visibility: visible; }
 
 #admintoolbar > div { float: left; width: 50%; min-width: 700px; }
 #admintoolbar > div * { vertical-align: top; }
-#admintoolbar > div.admintoolbarsep { clear:both; width: 100%; float: none; };
+#admintoolbar > div.admintoolbarsep { clear:both; width: 100%; float: none; }
+
+.sticky {
+    position: fixed;
+    width: 100%;
+    left: 0;
+    top: 0;
+    z-index: 100;
+    border-top: 0;
+}
+

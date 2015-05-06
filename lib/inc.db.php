@@ -42,6 +42,15 @@ $r = $pdo->query("SELECT COUNT(requireSamlLogin) FROM ${DB_PREFIX}pads");
 if ($r === false) {
   $pdo->query("ALTER TABLE ${DB_PREFIX}pads ADD (requireSamlLogin BOOLEAN DEFAULT FALSE NOT NULL);") or die(print_r($pdo->errorInfo(),true));
 }
+$r = $pdo->query("SELECT COUNT(contactFields) FROM ${DB_PREFIX}pads");
+if ($r === false) {
+  $pdo->query("ALTER TABLE ${DB_PREFIX}pads ADD (contactFields VARCHAR(4096) DEFAULT 'Kontakt' NOT NULL);") or die(print_r($pdo->errorInfo(),true));
+}
+$r = $pdo->query("SELECT COUNT(alwaysHideContacts) FROM ${DB_PREFIX}pads");
+if ($r === false) {
+  $pdo->query("ALTER TABLE ${DB_PREFIX}pads ADD (alwaysHideContacts BOOLEAN DEFAULT FALSE NOT NULL);") or die(print_r($pdo->errorInfo(),true));
+}
+
 
 $r = $pdo->query("SELECT COUNT(*) FROM ${DB_PREFIX}pad_width");
 if ($r === false) {
