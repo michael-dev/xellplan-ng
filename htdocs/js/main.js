@@ -55,6 +55,29 @@ jQuery.extend({
   }
 });
 
+xp.trim = (function () {
+    "use strict";
+
+    function escapeRegex(string) {
+        return string.replace(/[\[\](){}?*+\^$\\.|\-]/g, "\\$&");
+    }
+
+    return function trim(str, characters, flags) {
+        flags = flags || "g";
+        if (typeof str !== "string" || typeof characters !== "string" || typeof flags !== "string") {
+            throw new TypeError("argument must be string");
+        }
+
+        if (!/^[gi]*$/.test(flags)) {
+            throw new TypeError("Invalid flags supplied '" + flags.match(new RegExp("[^gi]*")) + "'");
+        }
+
+        characters = escapeRegex(characters);
+
+        return str.replace(new RegExp("^[" + characters + "]+|[" + characters + "]+$", flags), '');
+    };
+}());
+
 /* 65 (A) - 90 (Z): 26 Zeichen */
 xp.colName = function(i) {
   var c = '';
@@ -639,13 +662,16 @@ xp.onSaveVariable = function (event) {
       }
       var_email += $('#var_mail'+i).val().split("|").join("");
     }
+    /* var_email hat mind. (xp.contactFieldsList.length - 1) viele "|" Zeichen, aber leer ist leer */
+    if (var_email.length == xp.contactFieldsList.length - 1)
+      var_email = '';
   }
 
   var var_captcha = $('#var_captcha').val();
   var var_password = $('#var_password').val();
   var plan = xp.pads[xp.currentPlanId.group][xp.currentPlanId.section][planId];
   if (var_name == '') {
-    var_name = var_email;
+    var_name = xp.trim(var_email,'|');
   }
   if (plan.editPassword == 1) {
     if (var_password == '') {
