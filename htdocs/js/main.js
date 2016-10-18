@@ -2020,6 +2020,7 @@ xp.init = function() {
   $( "#saveplan" ).button().click(xp.onSavePlan);
   $( "#exportplan" ).button().click({'action':'exportPlan'}, xp.onExportPlan);
   $( "#exportplan2" ).button().click({'action':'exportPlan2'}, xp.onExportPlan);
+  $( "#exportpeople" ).button().click({'action':'exportPeople'}, xp.onExportPlan);
   $( "#totemplate" ).button().click(xp.onNewTemplate);
   $( "#userdialog").dialog({'autoOpen':false, 'modal':true, 'width':1000});
   $( "#userdialogpw").dialog({'autoOpen':false, 'modal':true, 'width':1000});
