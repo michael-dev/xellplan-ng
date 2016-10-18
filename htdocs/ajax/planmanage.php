@@ -146,8 +146,8 @@ switch ($_REQUEST["action"]):
    $padDataStmt = $pdo->prepare("UPDATE ${DB_PREFIX}pad_width SET idx = idx - 1 WHERE pad_id = ? AND idx > ? AND type = 'col'") or httperror($pdo->errorInfo());
    $padDataStmt->execute(Array($_REQUEST["id"], $_REQUEST["col"])) or httperror($padDataStmt->errorInfo());
  break;
- 
- 
+
+
  case "exportPlan":
    requirePadAdmin($_REQUEST["id"]);
    $planId = (int) $_REQUEST["id"];
@@ -235,58 +235,9 @@ switch ($_REQUEST["action"]):
    }
    exit;
  break;
- 
- 
+
+
  case "exportPlan2":
- requirePadAdmin($_REQUEST["id"]);
-   $planId = (int) $_REQUEST["id"];
-
-   $padStmt = $pdo->prepare("SELECT group_id, section_id, id, name, comment, eventStart, eventEnd, editStart, editEnd, creator, contact, (editPassword IS NOT NULL) AS editPassword, (adminPassword IS NOT NULL) AS adminPassword, subscribeHint, contactHint, requireSamlLogin, contactFields, alwaysHideContacts FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
-   $padStmt->execute(Array($planId)) or httperror($padDataStmt->errorInfo());
-   $padDetails = $padStmt->fetch(PDO::FETCH_ASSOC);
-
-   $padDataStmt = $pdo->prepare("SELECT row, col, text, classes, userEditField FROM ${DB_PREFIX}pad_data WHERE pad_id = ?") or httperror($pdo->errorInfo());
-   $padDataStmt->execute(Array($planId)) or httperror($padDataStmt->errorInfo());
-   $rows = $padDataStmt->fetchAll(PDO::FETCH_ASSOC);
-
-   $maxRow = 10; $maxCol = 10;
-   $padData = Array();
-   foreach ($rows as $row) {
-     $row["classes"] = explode(",", $row["classes"]);
-     $padData[$row["row"]][$row["col"]] = $row;
-     $maxRow = max($maxRow, $row["row"]);
-     $maxCol = max($maxCol, $col["col"]);
-   }
-
-   $padAssStmt = $pdo->prepare("SELECT row, col, name, organization, email FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ?") or httperror($pdo->errorInfo());
-   $padAssStmt->execute(Array($planId)) or httperror($padAssStmt->errorInfo());
-   $rows = $padAssStmt->fetchAll(PDO::FETCH_ASSOC);
-   $padAssistant = Array();
-   foreach ($rows as $row) {
-     $padAssistant[$row["row"]][$row["col"]] = $row;
-     $maxRow = max($maxRow, $row["row"]);
-     $maxCol = max($maxCol, $row["col"]);
-   }
-
-   header('Set-Cookie: fileDownload=true; path='.dirname(dirname($_SERVER["PHP_SELF"])));
-   header('Cache-Control: max-age=60, must-revalidate');
-   header("Content-Type: text/csv; charset=utf-8");
-   header('Content-Disposition: attachment; filename="'.$_REQUEST["id"]. '-people.csv"');
-   
-   $outstream = fopen("php://output",'w');
-   //content
-   for ($row = 0; $row <= $maxRow; $row++) {
-     
-     for ($col = 0; $col <= $maxCol; $col++) {
-      if ($padData[$row][$col]["userEditField"] && $padAssistant[$row][$col]){
-		$csvRow = Array(($row+1)."");
-        $csvRow[] = $padAssistant[$row][$col]["name"].",".$padAssistant[$row][$col]["organization"].",".$padAssistant[$row][$col]["email"];
-		fputcsv($outstream, $csvRow);
-	  }
-     }
-     
-   }
- /*
    requirePadAdmin($_REQUEST["id"]);
    $planId = (int) $_REQUEST["id"];
 
@@ -352,11 +303,10 @@ switch ($_REQUEST["action"]):
      }
      fputcsv($outstream, $csvRow);
    }
-   */
    exit;
  break;
  case "exportPeople":
-  /* requirePadAdmin($_REQUEST["id"]);
+   requirePadAdmin($_REQUEST["id"]);
    $planId = (int) $_REQUEST["id"];
 
    $padStmt = $pdo->prepare("SELECT group_id, section_id, id, name, comment, eventStart, eventEnd, editStart, editEnd, creator, contact, (editPassword IS NOT NULL) AS editPassword, (adminPassword IS NOT NULL) AS adminPassword, subscribeHint, contactHint, requireSamlLogin, contactFields, alwaysHideContacts FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
@@ -390,91 +340,36 @@ switch ($_REQUEST["action"]):
    header('Cache-Control: max-age=60, must-revalidate');
    header("Content-Type: text/csv; charset=utf-8");
    header('Content-Disposition: attachment; filename="'.$_REQUEST["id"]. '-people.csv"');
-   
+
    $outstream = fopen("php://output",'w');
+
+   $cf = explode("|", $padDetails["contactFields"]);
+   $cfl = count($cf);
+   $headline = array_merge(["Zeile", "Spalte", "Name", "Organisation"], $cf);
+   $headline = array_map("trim", $headline);
+   fputcsv($outstream, $headline);
+
    //content
    for ($row = 0; $row <= $maxRow; $row++) {
-     $csvRow = Array(($row+1).".");
      for ($col = 0; $col <= $maxCol; $col++) {
-      if ($padData[$row][$col]["userEditField"] && $padAssistant[$row][$col])
-        $csvRow[] = $padAssistant[$row][$col]["name"]." (".$padAssistant[$row][$col]["organization"].") (".$padAssistant[$row][$col]["email"].")";
-		fputcsv($outstream, $csvRow);
-     }
-     
-   }
- */
-    requirePadAdmin($_REQUEST["id"]);
-   $planId = (int) $_REQUEST["id"];
-
-   $padStmt = $pdo->prepare("SELECT group_id, section_id, id, name, comment, eventStart, eventEnd, editStart, editEnd, creator, contact, (editPassword IS NOT NULL) AS editPassword, (adminPassword IS NOT NULL) AS adminPassword, subscribeHint, contactHint, requireSamlLogin, contactFields, alwaysHideContacts FROM ${DB_PREFIX}pads WHERE id = ?") or httperror($pdo->errorInfo());
-   $padStmt->execute(Array($planId)) or httperror($padDataStmt->errorInfo());
-   $padDetails = $padStmt->fetch(PDO::FETCH_ASSOC);
-
-   $padDataStmt = $pdo->prepare("SELECT row, col, text, classes, userEditField FROM ${DB_PREFIX}pad_data WHERE pad_id = ?") or httperror($pdo->errorInfo());
-   $padDataStmt->execute(Array($planId)) or httperror($padDataStmt->errorInfo());
-   $rows = $padDataStmt->fetchAll(PDO::FETCH_ASSOC);
-
-   $maxRow = 10; $maxCol = 10;
-   $padData = Array();
-   foreach ($rows as $row) {
-     $row["classes"] = explode(",", $row["classes"]);
-     $padData[$row["row"]][$row["col"]] = $row;
-     $maxRow = max($maxRow, $row["row"]);
-     $maxCol = max($maxCol, $col["col"]);
-   }
-
-   $padAssStmt = $pdo->prepare("SELECT row, col, name, organization, email FROM ${DB_PREFIX}pad_assistant WHERE pad_id = ?") or httperror($pdo->errorInfo());
-   $padAssStmt->execute(Array($planId)) or httperror($padAssStmt->errorInfo());
-   $rows = $padAssStmt->fetchAll(PDO::FETCH_ASSOC);
-   $padAssistant = Array();
-   foreach ($rows as $row) {
-     $padAssistant[$row["row"]][$row["col"]] = $row;
-     $maxRow = max($maxRow, $row["row"]);
-     $maxCol = max($maxCol, $row["col"]);
-   }
-
-   header('Set-Cookie: fileDownload=true; path='.dirname(dirname($_SERVER["PHP_SELF"])));
-   header('Cache-Control: max-age=60, must-revalidate');
-   header("Content-Type: text/csv; charset=utf-8");
-   header('Content-Disposition: attachment; filename="'.$_REQUEST["id"]. '-simple.csv"');
-
-   $outstream = fopen("php://output",'w');
-   fputcsv($outstream, Array('Gruppe:', $padDetails["group_id"], 'Bereich:', $padDetails["section_id"], 'Plan:', $padDetails["name"], "ID:", $padDetails["id"]));
-   fputcsv($outstream, Array('Ersteller:', $padDetails["contact"], 'ursprünglich:', $padDetails["creator"]));
-   fputcsv($outstream, Array('Ereignis (von,bis):', $padDetails["eventStart"], $padDetails["eventEnd"]));
-   fputcsv($outstream, Array('Eintragen (von,bis):', $padDetails["editStart"], $padDetails["editEnd"]));
-   fputcsv($outstream, Array('Kommentar:', $padDetails["comment"]));
-   fputcsv($outstream, Array('Bearbeiten-Kennwort:', $padDetails["adminPassword"] ? "ja" : "nein", "Dienste-Kenntwort:", $padDetails["editPassword"] ? "ja" : "nein"));
-   fputcsv($outstream, Array('Information für Dienste:', $padDetails["subscribeHint"]));
-   fputcsv($outstream, Array('Abgefragte Kontaktdaten:', $padDetails["contactHint"]));
-   fputcsv($outstream, Array('Abgefragte Kontaktdaten:', $padDetails["contactFields"]));
-   fputcsv($outstream, Array('Zeilen:', $maxRow + 1, "Spalten:", $maxCol + 1));
-   fputcsv($outstream, Array(''));
-   fputcsv($outstream, Array('Inhalt'));
-   // Table Header
-   $csvRow = Array("");
-   for ($col = 0; $col <= $maxCol; $col++) {
-      $csvRow[] = colName($col);
-   }
-   fputcsv($outstream, $csvRow);
-   // Table content
-   for ($row = 0; $row <= $maxRow; $row++) {
-     $csvRow = Array(($row+1).".");
-     for ($col = 0; $col <= $maxCol; $col++) {
-      if ($padData[$row][$col]["userEditField"] && $padAssistant[$row][$col])
-        $csvRow[] = $padAssistant[$row][$col]["name"]." (".$padAssistant[$row][$col]["organization"].") (".$padAssistant[$row][$col]["email"].")";
-      else
-        $csvRow[] = $padData[$row][$col]["text"];
-     }
-     fputcsv($outstream, $csvRow);
-   }
-   
+       if (!$padData[$row][$col]["userEditField"] || !$padAssistant[$row][$col])
+         continue;
+       $csvRow = [];
+       $csvRow[] = $row;
+       $csvRow[] = $col;
+       $csvRow[] = $padAssistant[$row][$col]["name"];
+       $csvRow[] = $padAssistant[$row][$col]["organization"];
+       $csvRow = array_merge($csvRow, explode("|", $padAssistant[$row][$col]["email"], $cfl));
+       $csvRow = array_map("trim", $csvRow);
+       fputcsv($outstream, $csvRow);
+     } // col
+   } // row
  exit;
  break;
  default:
    httperror("invalid action: ".htmlspecialchars($_REQUEST["action"]));
  break;
- 
+
 endswitch;
 
 header("Content-Type: text/json; charset=UTF-8");
