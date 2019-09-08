@@ -4,6 +4,7 @@ global $pdo;
 global $DB_DSN, $DB_USERNAME, $DB_PASSWORD, $DB_PREFIX;
 
 $pdo = new PDO($DB_DSN, $DB_USERNAME, $DB_PASSWORD);
+$pdo->query("SET SQL_MODE = ''");
 
 $r = $pdo->query("SELECT COUNT(*) FROM ${DB_PREFIX}groups");
 if ($r === false) {
